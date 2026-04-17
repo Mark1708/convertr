@@ -1,0 +1,52 @@
+version: 2
+
+project_name: convertr
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: convertr
+    main: ./cmd/convertr
+    binary: convertr
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.Version={{.Version}}
+
+archives:
+  - id: convertr
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - scripts/install-deps-macos.sh
+      - scripts/install-deps-linux.sh
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: mark1708
+    name: convertr
+
+brews:
+  - name: convertr
+    tap:
+      owner: mark1708
+      name: homebrew-tap
+    folder: Formula
+    homepage: https://git.mark1708.ru/me/convertr
+    description: Universal file format converter CLI
+    license: MIT
+    install: |
+      bin.install "convertr"
+    test: |
+      system "#{bin}/convertr", "--version"

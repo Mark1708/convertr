@@ -3,26 +3,29 @@ package cli
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/spf13/cobra"
 
+	"git.mark1708.ru/me/convertr/internal/backend/execx"
 	"git.mark1708.ru/me/convertr/internal/i18n"
 )
 
 type depSpec struct {
-	binary  string
-	install string
+	binary      string
+	versionArgs []string // args to pass to get version string
+	install     string
 }
 
 var deps = []depSpec{
-	{"pandoc", "brew install pandoc"},
-	{"ffmpeg", "brew install ffmpeg"},
-	{"soffice", "brew install --cask libreoffice"},
-	{"convert", "brew install imagemagick"},
-	{"jq", "brew install jq"},
-	{"yq", "brew install yq"},
-	{"tesseract", "brew install tesseract"},
-	{"figlet", "brew install figlet"},
+	{"pandoc", []string{"--version"}, "brew install pandoc"},
+	{"ffmpeg", []string{"-version"}, "brew install ffmpeg"},
+	{"soffice", []string{"--version"}, "brew install --cask libreoffice"},
+	{"magick", []string{"--version"}, "brew install imagemagick"},
+	{"jq", []string{"--version"}, "brew install jq"},
+	{"yq", []string{"--version"}, "brew install yq"},
+	{"tesseract", []string{"--version"}, "brew install tesseract"},
+	{"figlet", []string{"--version"}, "brew install figlet"},
 }
 
 func newDoctorCmd() *cobra.Command {
@@ -30,6 +33,7 @@ func newDoctorCmd() *cobra.Command {
 		Use:   "doctor",
 		Short: i18n.T("cli.doctor.short"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			ctx := cmd.Context()
 			w := cmd.OutOrStdout()
 			fmt.Fprintf(w, "%s\n\n", i18n.T("doctor.header"))
 
@@ -37,13 +41,25 @@ func newDoctorCmd() *cobra.Command {
 			for _, d := range deps {
 				path, err := exec.LookPath(d.binary)
 				if err != nil {
-					fmt.Fprintf(w, "  %-14s %s  (%s)\n", d.binary,
+					// Try "convert" as fallback name for ImageMagick 6.x.
+					if d.binary == "magick" {
+						if p, e := exec.LookPath("convert"); e == nil {
+							path = p
+							err = nil
+						}
+					}
+				}
+				if err != nil {
+					fmt.Fprintf(w, "  %-14s %-18s %s  (%s)\n",
+						d.binary, "",
 						i18n.T("doctor.missing"),
 						i18n.Tf("doctor.install_hint", map[string]any{"Cmd": d.install}))
 					missing++
-				} else {
-					fmt.Fprintf(w, "  %-14s %s  (%s)\n", d.binary, i18n.T("doctor.ok"), path)
+					continue
 				}
+				ver := shortVersion(execx.Version(ctx, d.binary, d.versionArgs...))
+				fmt.Fprintf(w, "  %-14s %-18s %s  (%s)\n",
+					d.binary, ver, i18n.T("doctor.ok"), path)
 			}
 
 			fmt.Fprintln(w)
@@ -55,4 +71,28 @@ func newDoctorCmd() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+// shortVersion extracts a short version token from a full version string.
+// E.g. "pandoc 3.7.0" → "3.7.0", "ffmpeg version 7.1" → "7.1".
+func shortVersion(full string) string {
+	if full == "" {
+		return ""
+	}
+	fields := strings.Fields(full)
+	// Find first field that looks like a version number (contains a digit).
+	for _, f := range fields {
+		hasDigit := false
+		for _, r := range f {
+			if r >= '0' && r <= '9' {
+				hasDigit = true
+				break
+			}
+		}
+		if hasDigit {
+			// Strip trailing punctuation.
+			return strings.TrimRight(f, ",;")
+		}
+	}
+	return fields[0]
 }

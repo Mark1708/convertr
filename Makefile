@@ -3,7 +3,7 @@ MODULE  := git.mark1708.ru/me/convertr
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -ldflags "-X main.Version=$(VERSION)"
 
-.PHONY: build install test lint clean
+.PHONY: build install test lint clean snapshot release
 
 build:
 	go build $(LDFLAGS) -o $(BIN) ./cmd/convertr
@@ -16,6 +16,12 @@ test:
 
 lint:
 	golangci-lint run ./...
+
+snapshot:
+	goreleaser release --snapshot --clean
+
+release:
+	goreleaser release --clean
 
 clean:
 	rm -f $(BIN)

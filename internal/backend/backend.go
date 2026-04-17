@@ -60,6 +60,9 @@ func (e *ConvertError) Error() string {
 
 func (e *ConvertError) Unwrap() error { return e.Err }
 
+// Is makes ConvertError satisfy errors.Is(err, ErrConvertFail) for retry logic.
+func (e *ConvertError) Is(target error) bool { return target == ErrConvertFail }
+
 // Wrap creates a ConvertError.
 func Wrap(name, from, to string, err error) error {
 	return &ConvertError{BackendName: name, From: from, To: to, Err: err}

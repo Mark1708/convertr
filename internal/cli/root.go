@@ -60,7 +60,13 @@ func New(version string) *cobra.Command {
 		newVersionCmd(version),
 		newDoctorCmd(),
 		newFormatsCmd(),
+		newWatchCmd(),
+		newConfigCmd(),
+		newPluginsCmd(),
+		newInfoCmd(),
 	)
+
+	addConvertToRoot(root)
 
 	return root
 }

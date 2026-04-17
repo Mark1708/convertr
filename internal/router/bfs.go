@@ -37,6 +37,9 @@ func (g *Graph) Find(src, dst string) (*Route, error) {
 
 	for pq.Len() > 0 {
 		cur := heap.Pop(pq).(*item)
+		if cur.format == dst {
+			return buildRoute(g, cur.path), nil
+		}
 		if cur.cost > dist[cur.format] {
 			continue
 		}
@@ -52,11 +55,7 @@ func (g *Graph) Find(src, dst string) (*Route, error) {
 			newPath := make([]edge, len(cur.path)+1)
 			copy(newPath, cur.path)
 			newPath[len(cur.path)] = e
-			next := &item{format: e.to, cost: newCost, path: newPath}
-			heap.Push(pq, next)
-			if e.to == dst {
-				return buildRoute(g, newPath), nil
-			}
+			heap.Push(pq, &item{format: e.to, cost: newCost, path: newPath})
 		}
 	}
 	return nil, fmt.Errorf("%w: %s → %s", backend.ErrNoRoute, src, dst)
@@ -65,11 +64,6 @@ func (g *Graph) Find(src, dst string) (*Route, error) {
 func buildRoute(g *Graph, path []edge) *Route {
 	steps := make([]Step, len(path))
 	for i, e := range path {
-		from := ""
-		if i == 0 {
-			// recover from by reversing: walk path up to i
-		}
-		_ = from
 		caps := g.backends[e.backendIdx].Capabilities()
 		steps[i] = Step{
 			From:    caps[e.capIdx].From,
