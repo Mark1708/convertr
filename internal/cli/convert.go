@@ -27,6 +27,7 @@ type convertFlags struct {
 	onError    string
 	onConflict string
 	recursive  bool
+	mkdir      bool
 }
 
 // addConvertToRoot registers conversion flags on the root command and sets RunE.
@@ -44,6 +45,7 @@ func addConvertToRoot(root *cobra.Command) {
 	fl.StringVar(&f.onError, "on-error", "skip", "error policy: skip|stop|retry")
 	fl.StringVar(&f.onConflict, "on-conflict", "overwrite", "conflict policy: overwrite|skip|rename|error")
 	fl.BoolVarP(&f.recursive, "recursive", "r", false, "recurse into directories")
+	fl.BoolVar(&f.mkdir, "mkdir", false, "create output directory if it does not exist")
 
 	root.Args = cobra.ArbitraryArgs
 	root.RunE = func(cmd *cobra.Command, args []string) error {
@@ -62,12 +64,10 @@ func runConvert(cmd *cobra.Command, args []string, f convertFlags) error {
 
 	g := router.Build()
 
-	sk := sink.ResolveSink(f.output, toFormat)
 	conflictPolicy, err := sink.ParseConflictPolicy(f.onConflict)
 	if err != nil {
 		return err
 	}
-	sk.Policy = conflictPolicy
 
 	// Build source iterators.
 	var srcs []iter.Seq2[source.SourceFile, error]
@@ -98,11 +98,48 @@ func runConvert(cmd *cobra.Command, args []string, f convertFlags) error {
 			}
 			return err
 		}
-		jobs = append(jobs, runner.Job{Source: sf, Route: route, Sink: sk})
+		jobs = append(jobs, runner.Job{Source: sf, Route: route, Sink: nil})
 	}
 
 	if len(jobs) == 0 {
 		return fmt.Errorf("no input files found")
+	}
+
+	// Resolve sink now that we know how many jobs there are.
+	// With multiple jobs, an output path that looks like a file is treated
+	// as a directory (same behaviour as cp -t).
+	sk := sink.ResolveSink(f.output, toFormat)
+	if sk.Type == sink.SinkTypeFile && len(jobs) > 1 {
+		sk.Type = sink.SinkTypeDir
+	}
+
+	// When the output directory does not yet exist, create it (--mkdir) or
+	// ask the user interactively.
+	if sk.Type == sink.SinkTypeDir {
+		if _, err := os.Stat(sk.Path); os.IsNotExist(err) {
+			if f.mkdir {
+				if err := os.MkdirAll(sk.Path, 0o755); err != nil {
+					return fmt.Errorf("create output directory: %w", err)
+				}
+			} else if isInteractive(cmd) {
+				fmt.Fprintf(cmd.ErrOrStderr(), "Output directory does not exist: %s\nCreate it? [y/N] ", sk.Path)
+				var answer string
+				fmt.Fscan(cmd.InOrStdin(), &answer)
+				if answer != "y" && answer != "Y" {
+					return fmt.Errorf("output directory %q does not exist; use --mkdir to create it automatically", sk.Path)
+				}
+				if err := os.MkdirAll(sk.Path, 0o755); err != nil {
+					return fmt.Errorf("create output directory: %w", err)
+				}
+			} else {
+				return fmt.Errorf("output directory %q does not exist; use --mkdir to create it automatically", sk.Path)
+			}
+		}
+	}
+
+	sk.Policy = conflictPolicy
+	for i := range jobs {
+		jobs[i].Sink = sk
 	}
 
 	errPolicy, err := runner.ParseErrorPolicy(f.onError)
@@ -167,4 +204,17 @@ func resolveInputArg(arg, fromFormat string, recursive bool) iter.Seq2[source.So
 
 func containsGlobChars(s string) bool {
 	return strings.ContainsAny(s, "*?[")
+}
+
+// isInteractive returns true when the command's stdin is a terminal.
+func isInteractive(cmd *cobra.Command) bool {
+	f, ok := cmd.InOrStdin().(*os.File)
+	if !ok {
+		return false
+	}
+	stat, err := f.Stat()
+	if err != nil {
+		return false
+	}
+	return (stat.Mode() & os.ModeCharDevice) != 0
 }

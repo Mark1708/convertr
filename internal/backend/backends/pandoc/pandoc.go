@@ -71,6 +71,16 @@ func (Backend) Capabilities() []backend.Capability {
 func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Options) error {
 	args := []string{in, "-o", out}
 
+	// Always pass explicit --from/--to so pandoc never guesses from file extensions.
+	// This matters when the source file extension doesn't match its actual content
+	// (e.g. an HTML file saved as .doc).
+	if from := opts.Named["step.from"]; from != "" {
+		args = append(args, "--from", pandocFormat(from))
+	}
+	if to := opts.Named["step.to"]; to != "" {
+		args = append(args, "--to", pandocFormat(to))
+	}
+
 	// Prefer xelatex for PDF output; fall back to pdflatex.
 	if isPDF(out) {
 		if _, err := exec.LookPath("xelatex"); err == nil {
@@ -86,6 +96,20 @@ func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Optio
 		return backend.Wrap(b.Name(), in, out, err)
 	}
 	return nil
+}
+
+// pandocFormat maps convertr format IDs to pandoc format names.
+func pandocFormat(id string) string {
+	switch id {
+	case "md":
+		return "markdown"
+	case "tex":
+		return "latex"
+	case "txt":
+		return "plain"
+	default:
+		return id
+	}
 }
 
 func isPDF(path string) bool {

@@ -137,7 +137,13 @@ func convertJob(ctx context.Context, j Job, finalPath string) error {
 	for i, step := range j.Route.Steps {
 		ext := firstExt(step.To)
 		next := filepath.Join(tmpDir, fmt.Sprintf("step%02d%s", i, ext))
-		if err := step.Backend.Convert(ctx, current, next, j.Opts); err != nil {
+		stepOpts := j.Opts
+		if stepOpts.Named == nil {
+			stepOpts.Named = make(map[string]string)
+		}
+		stepOpts.Named["step.from"] = step.From
+		stepOpts.Named["step.to"] = step.To
+		if err := step.Backend.Convert(ctx, current, next, stepOpts); err != nil {
 			return err
 		}
 		current = next
