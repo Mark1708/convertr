@@ -1,0 +1,38 @@
+{
+  "cli.root.short": "Universal file converter",
+  "cli.root.long": "convertr orchestrates pandoc, ffmpeg, LibreOffice, ImageMagick and other backends\nto convert files between any supported formats via a format graph with BFS routing.",
+
+  "cli.flag.config": "path to config file",
+  "cli.flag.profile": "activate named profile from config",
+  "cli.flag.lang": "language (en, ru)",
+  "cli.flag.verbose": "increase log verbosity (-v, -vv, -vvv)",
+  "cli.flag.quiet": "suppress all output except errors",
+  "cli.flag.json": "output logs in JSON format",
+  "cli.flag.no_color": "disable ANSI color output",
+
+  "cli.convert.short": "Convert files between formats",
+  "cli.convert.long": "Convert one or more files. Input can be files, directories, globs, or stdin.\nThe output format is inferred from the -o extension or --to flag.",
+
+  "cli.doctor.short": "Check installed backends and environment",
+  "cli.formats.short": "List supported formats and conversion graph",
+  "cli.backends.short": "List conversion backends and their status",
+  "cli.plan.short": "Show conversion plan without executing",
+  "cli.watch.short": "Watch a directory and convert on changes",
+  "cli.info.short": "Show file metadata without converting",
+  "cli.plugins.short": "Manage external converter plugins",
+  "cli.config.short": "Show or manage convertr configuration",
+  "cli.version.short": "Print version information",
+
+  "doctor.ok": "OK",
+  "doctor.missing": "MISSING",
+  "doctor.warn": "WARN",
+  "doctor.header": "Backends",
+  "doctor.install_hint": "install with: {{.Cmd}}",
+  "doctor.all_ok": "All required backends are available.",
+  "doctor.has_missing": "Some backends are missing. Run `convertr doctor` for details.",
+
+  "error.no_route": "no conversion route found from {{.From}} to {{.To}}",
+  "error.no_binary": "backend {{.Name}} is not installed",
+  "error.convert_failed": "{{.Backend}}: convert {{.From}} → {{.To}}: {{.Err}}",
+  "error.batch_partial": "{{.Failed}} of {{.Total}} conversions failed"
+}
