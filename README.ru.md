@@ -208,15 +208,33 @@ quality = 95
 | `--on-error` | | `skip` | Политика ошибок: `skip` \| `stop` \| `retry` |
 | `--on-conflict` | | `overwrite` | Политика конфликтов: `overwrite` \| `skip` \| `rename` \| `error` |
 | `--recursive` | `-r` | false | Рекурсивно обходить директории |
+| `--mkdir` | | false | Создать выходную директорию если она не существует |
 
 **Типы ввода:**
 
 ```sh
-convertr file.md -o out.pdf            # один файл
-convertr a.md b.md -o out/             # несколько файлов → выходная директория
-convertr "src/**/*.md" -o out/ --to pdf # glob
-convertr -r ./src/ -o ./out/ --to html # директория (рекурсивно)
-convertr - --from json --to yaml -o -  # stdin → stdout
+convertr file.md -o out.pdf                   # один файл
+convertr a.md b.md -o out/ --mkdir            # несколько файлов → выходная директория (создаётся если нет)
+convertr "src/**/*.md" -o out/ --to pdf       # glob
+convertr -r ./src/ -o ./out/ --to html        # директория (рекурсивно)
+convertr - --from json --to yaml -o -         # stdin → stdout
+```
+
+**Определение выходной директории:**
+
+При нескольких входных файлах выходной путь всегда трактуется как директория — даже без завершающего `/`. Если директория не существует, convertr:
+
+- спросит интерактивно `Create it? [y/N]` в TTY, или
+- вернёт ошибку с подсказкой использовать `--mkdir` в неинтерактивном режиме.
+
+```sh
+# Автоматически создать выходную директорию:
+convertr -r ./docs/ -o ./out --to md --mkdir
+
+# Интерактивный промпт в TTY (--mkdir не нужен):
+convertr -r ./docs/ -o ./out --to md
+# Output directory does not exist: ./out
+# Create it? [y/N]
 ```
 
 **Политики ошибок:**

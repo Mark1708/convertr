@@ -12,6 +12,18 @@ Internal packages (`internal/`) are not part of the public API.
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- Pandoc backend now passes explicit `--from`/`--to` flags on every call, preventing format misdetection when the file extension doesn't match actual content (e.g. HTML saved as `.doc`)
+
+### Added
+- `--mkdir` flag: automatically create the output directory without prompting
+- Multi-input directory detection: when multiple input files are given, the output path is treated as a directory even without a trailing `/`
+- Interactive `Create it? [y/N]` prompt when the output directory is missing and running in a TTY
+
+---
+
 ## [0.1.0] — 2026-04-17
 
 Initial release.

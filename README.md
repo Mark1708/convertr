@@ -208,15 +208,33 @@ When no subcommand is given, convertr treats arguments as input files and runs t
 | `--on-error` | | `skip` | Error policy: `skip` \| `stop` \| `retry` |
 | `--on-conflict` | | `overwrite` | Conflict policy: `overwrite` \| `skip` \| `rename` \| `error` |
 | `--recursive` | `-r` | false | Recurse into directories |
+| `--mkdir` | | false | Create output directory if it does not exist |
 
 **Input types:**
 
 ```sh
-convertr file.md -o out.pdf          # single file
-convertr a.md b.md -o out/           # multiple files → output directory
+convertr file.md -o out.pdf              # single file
+convertr a.md b.md -o out/ --mkdir       # multiple files → output directory (created if absent)
 convertr "src/**/*.md" -o out/ --to pdf  # glob
 convertr -r ./src/ -o ./out/ --to html   # directory (recursive)
 convertr - --from json --to yaml -o -    # stdin → stdout
+```
+
+**Output directory resolution:**
+
+When multiple input files are given, the output path is always treated as a directory — even if no trailing `/` is present. If the directory does not yet exist, convertr will:
+
+- ask interactively `Create it? [y/N]` when running in a TTY, or
+- return an error with a hint to use `--mkdir` in non-interactive mode.
+
+```sh
+# Auto-create the output directory:
+convertr -r ./docs/ -o ./out --to md --mkdir
+
+# TTY prompt (no --mkdir needed):
+convertr -r ./docs/ -o ./out --to md
+# Output directory does not exist: ./out
+# Create it? [y/N]
 ```
 
 **Error policies:**
