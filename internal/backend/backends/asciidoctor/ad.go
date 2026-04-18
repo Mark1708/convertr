@@ -36,6 +36,14 @@ func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Optio
 	if isPDF(out) {
 		args = append(args, "-r", "asciidoctor-pdf", "-b", "pdf")
 	}
+
+	if opts.Get("asciidoctor", "toc") == "true" {
+		args = append(args, "-a", "toc")
+	}
+	if attr := opts.Get("asciidoctor", "attribute"); attr != "" {
+		args = append(args, "-a", attr)
+	}
+
 	args = append(args, "-o", out)
 	args = append(args, opts.ExtraArgs...)
 	args = append(args, in)

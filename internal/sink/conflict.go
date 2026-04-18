@@ -1,10 +1,13 @@
 package sink
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"git.mark1708.ru/me/convertr/internal/i18n"
 )
 
 // ConflictPolicy controls what happens when the output file already exists.
@@ -29,7 +32,7 @@ func ParseConflictPolicy(s string) (ConflictPolicy, error) {
 	case "error":
 		return ConflictError, nil
 	default:
-		return 0, fmt.Errorf("unknown conflict policy %q: use overwrite|skip|rename|error", s)
+		return 0, errors.New(i18n.Tf("sink.unknown_conflict_policy", map[string]any{"Policy": s}))
 	}
 }
 
@@ -55,7 +58,7 @@ func Resolve(path string, policy ConflictPolicy) (string, Action, error) {
 	case ConflictRename:
 		return uniquePath(path), ActionWrite, nil
 	case ConflictError:
-		return "", 0, fmt.Errorf("output file already exists: %s", path)
+		return "", 0, errors.New(i18n.Tf("sink.file_exists", map[string]any{"Path": path}))
 	default:
 		return path, ActionWrite, nil
 	}

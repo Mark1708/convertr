@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"git.mark1708.ru/me/convertr/internal/backend"
 	"git.mark1708.ru/me/convertr/internal/backend/execx"
@@ -73,6 +74,11 @@ func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Optio
 
 func buildArgs(in, out string, opts backend.Options) []string {
 	args := []string{"-y", "-hide_banner", "-loglevel", "error", "-i", in}
+
+	if opts.Workers > 0 {
+		args = append(args, "-threads", strconv.Itoa(opts.Workers))
+	}
+
 	if opts.Quality > 0 {
 		ext := filepath.Ext(out)
 		switch ext {
@@ -82,6 +88,24 @@ func buildArgs(in, out string, opts backend.Options) []string {
 			args = append(args, "-b:a", fmt.Sprintf("%dk", opts.Quality*3))
 		}
 	}
+
+	if codec := opts.Get("ffmpeg", "video_codec"); codec != "" {
+		args = append(args, "-c:v", codec)
+	}
+	if codec := opts.Get("ffmpeg", "audio_codec"); codec != "" {
+		args = append(args, "-c:a", codec)
+	}
+	if fps := opts.Get("ffmpeg", "fps"); fps != "" {
+		args = append(args, "-r", fps)
+	}
+	if rate := opts.Get("ffmpeg", "audio_rate"); rate != "" {
+		args = append(args, "-ar", rate)
+	}
+
+	if opts.StripMeta {
+		args = append(args, "-map_metadata", "-1")
+	}
+
 	args = append(args, opts.ExtraArgs...)
 	args = append(args, out)
 	return args
@@ -92,20 +116,28 @@ func convertToGIF(ctx context.Context, b Backend, in, out string, opts backend.O
 	palette := filepath.Join(os.TempDir(), fmt.Sprintf("convertr-palette-%d.png", os.Getpid()))
 	defer os.Remove(palette)
 
+	// Build palette filter: optional fps and scale.
+	paletteFilter := buildGIFFilter(opts)
+
 	pass1 := []string{
 		"-y", "-hide_banner", "-loglevel", "error",
 		"-i", in,
-		"-vf", "palettegen",
+		"-vf", paletteFilter + ",palettegen",
 		palette,
 	}
 	if err := execx.Run(ctx, "ffmpeg", pass1...); err != nil {
 		return backend.Wrap(b.Name(), in, out, err)
 	}
 
+	lavfi := paletteFilter + "[x];[x][1:v]paletteuse"
 	pass2 := []string{
 		"-y", "-hide_banner", "-loglevel", "error",
 		"-i", in, "-i", palette,
-		"-lavfi", "paletteuse",
+		"-lavfi", lavfi,
+	}
+
+	if opts.StripMeta {
+		pass2 = append(pass2, "-map_metadata", "-1")
 	}
 	pass2 = append(pass2, opts.ExtraArgs...)
 	pass2 = append(pass2, out)
@@ -113,4 +145,26 @@ func convertToGIF(ctx context.Context, b Backend, in, out string, opts backend.O
 		return backend.Wrap(b.Name(), in, out, err)
 	}
 	return nil
+}
+
+// buildGIFFilter constructs the vf filter chain for the palette pass.
+func buildGIFFilter(opts backend.Options) string {
+	var parts []string
+	if fps := opts.Get("ffmpeg", "gif_fps"); fps != "" {
+		parts = append(parts, "fps="+fps)
+	}
+	if scale := opts.Get("ffmpeg", "gif_scale"); scale != "" {
+		parts = append(parts, "scale="+scale+":-1:flags=lanczos")
+	}
+	if len(parts) == 0 {
+		return "fps=10,scale=320:-1:flags=lanczos"
+	}
+	result := ""
+	for i, p := range parts {
+		if i > 0 {
+			result += ","
+		}
+		result += p
+	}
+	return result
 }

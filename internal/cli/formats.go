@@ -25,7 +25,7 @@ func newFormatsCmd() *cobra.Command {
 			return printTable(cmd)
 		},
 	}
-	cmd.Flags().BoolVar(&dotOutput, "dot", false, "output Graphviz DOT format")
+	cmd.Flags().BoolVar(&dotOutput, "dot", false, i18n.T("cli.formats.flag.dot"))
 	return cmd
 }
 

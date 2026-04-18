@@ -16,11 +16,24 @@ Internal packages (`internal/`) are not part of the public API.
 
 ### Fixed
 - Pandoc backend now passes explicit `--from`/`--to` flags on every call, preventing format misdetection when the file extension doesn't match actual content (e.g. HTML saved as `.doc`)
+- i18n language detection from `$LANG` environment variable now persists through command execution (previously reset to English by `PersistentPreRunE`)
 
 ### Added
 - `--mkdir` flag: automatically create the output directory without prompting
 - Multi-input directory detection: when multiple input files are given, the output path is treated as a directory even without a trailing `/`
 - Interactive `Create it? [y/N]` prompt when the output directory is missing and running in a TTY
+- `--named key=value` flag (repeatable): pass backend-specific named options from the CLI without using `extra_args`
+- `--strip-meta` flag: strip file metadata (EXIF, ID3, document properties) — supported by imagemagick (`-strip`), ffmpeg (`-map_metadata -1`), pandoc (`--strip-comments`)
+- **i18n completeness**: all CLI flag descriptions, error messages, subcommand descriptions, and progress output are now fully translated into English and Russian
+- **Backend named options** — new per-backend `--named` keys:
+  - `ffmpeg`: `ffmpeg.video_codec`, `ffmpeg.audio_codec`, `ffmpeg.fps`, `ffmpeg.audio_rate`, `ffmpeg.gif_fps`, `ffmpeg.gif_scale`
+  - `pandoc`: `pandoc.toc`, `pandoc.standalone`, `pandoc.highlight`, `pandoc.template`, `pandoc.pdf_engine`
+  - `imagemagick`: `imagemagick.resize`, `imagemagick.density`, `imagemagick.depth`
+  - `figlet`: `figlet.font` (previously hardcoded to `standard`)
+  - `yq`: `yq.sort_keys`, `yq.indent`
+  - `csvkit`: `csvkit.sheet`, `csvkit.delimiter`
+  - `asciidoctor`: `asciidoctor.toc`, `asciidoctor.attribute`
+- `--workers` / `-j` value is now forwarded to ffmpeg as `-threads` for multi-threaded encoding
 
 ---
 

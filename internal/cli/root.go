@@ -30,8 +30,8 @@ func New(version string) *cobra.Command {
 		Short: i18n.T("cli.root.short"),
 		Long:  i18n.T("cli.root.long"),
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			// Reinitialise i18n now that --lang is parsed.
-			if err := i18n.Init(rootFlags.Lang); err != nil {
+			// Reinitialise i18n: --lang takes priority, then $LANG env, then "en".
+			if err := i18n.Init(i18n.DetectLang(rootFlags.Lang)); err != nil {
 				return err
 			}
 			// Configure logging.

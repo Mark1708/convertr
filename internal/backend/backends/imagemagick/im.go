@@ -65,10 +65,25 @@ func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Optio
 	if binary == "magick" {
 		args = append(args, "convert")
 	}
+
+	// -density must come before input for correct SVG rendering.
+	if density := opts.Get("imagemagick", "density"); density != "" {
+		args = append(args, "-density", density)
+	}
+
 	args = append(args, in)
 
 	if opts.Quality > 0 {
 		args = append(args, "-quality", fmt.Sprintf("%d", opts.Quality))
+	}
+	if resize := opts.Get("imagemagick", "resize"); resize != "" {
+		args = append(args, "-resize", resize)
+	}
+	if depth := opts.Get("imagemagick", "depth"); depth != "" {
+		args = append(args, "-depth", depth)
+	}
+	if opts.StripMeta {
+		args = append(args, "-strip")
 	}
 
 	args = append(args, opts.ExtraArgs...)

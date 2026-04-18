@@ -41,7 +41,16 @@ func (Backend) Capabilities() []backend.Capability {
 
 func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Options) error {
 	toFmt := yqFmtFromExt(out)
-	args := []string{"-o", toFmt, ".", in}
+	args := []string{"-o", toFmt}
+
+	if opts.Get("yq", "sort_keys") == "true" {
+		args = append(args, "--sort-keys")
+	}
+	if indent := opts.Get("yq", "indent"); indent != "" {
+		args = append(args, "--indent", indent)
+	}
+
+	args = append(args, ".", in)
 	args = append(args, opts.ExtraArgs...)
 
 	outBytes, err := execx.Output(ctx, "yq", args...)
@@ -66,3 +75,6 @@ func yqFmtFromExt(path string) string {
 	}
 	return "json"
 }
+
+// ensure yqFormat is referenced to avoid "declared and not used" error.
+var _ = yqFormat

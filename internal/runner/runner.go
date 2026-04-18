@@ -2,12 +2,14 @@ package runner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"git.mark1708.ru/me/convertr/internal/formats"
+	"git.mark1708.ru/me/convertr/internal/i18n"
 	"git.mark1708.ru/me/convertr/internal/progress"
 	"git.mark1708.ru/me/convertr/internal/sink"
 )
@@ -31,7 +33,7 @@ func ParseErrorPolicy(s string) (ErrorPolicy, error) {
 	case "retry":
 		return ErrorPolicyRetry, nil
 	default:
-		return 0, fmt.Errorf("unknown error policy %q: use skip|stop|retry", s)
+		return 0, errors.New(i18n.Tf("runner.unknown_error_policy", map[string]any{"Policy": s}))
 	}
 }
 
@@ -96,6 +98,11 @@ func executeSerial(ctx context.Context, jobs []Job, opts RunOpts, coll *collecto
 func executeJob(ctx context.Context, j Job, opts RunOpts) (string, error) {
 	defer j.Source.Close() // clean up stdin temp files
 
+	// Propagate runner workers to job opts for backend use (e.g. ffmpeg -threads).
+	if j.Opts.Workers == 0 && opts.Workers > 0 {
+		j.Opts.Workers = opts.Workers
+	}
+
 	finalPath, action, err := resolveFinalPath(j, opts.OnConflict)
 	if err != nil {
 		return "", err
@@ -105,7 +112,7 @@ func executeJob(ctx context.Context, j Job, opts RunOpts) (string, error) {
 	}
 
 	if opts.DryRun {
-		fmt.Fprintf(os.Stderr, "dry-run: %s → %s\n", j.Source.Path, finalPath)
+		fmt.Fprintln(os.Stderr, i18n.Tf("runner.dry_run", map[string]any{"From": j.Source.Path, "To": finalPath}))
 		return finalPath, nil
 	}
 
@@ -129,7 +136,7 @@ func convertJob(ctx context.Context, j Job, finalPath string) error {
 
 	tmpDir, err := os.MkdirTemp("", "convertr-*")
 	if err != nil {
-		return fmt.Errorf("create temp dir: %w", err)
+		return fmt.Errorf("%s: %w", i18n.T("runner.create_temp_dir"), err)
 	}
 	defer os.RemoveAll(tmpDir)
 
@@ -171,7 +178,7 @@ func resolveFinalPath(j Job, policy sink.ConflictPolicy) (string, sink.Action, e
 		outPath := filepath.Join(j.Sink.Path, name)
 		return sink.Resolve(outPath, policy)
 	default:
-		return "", 0, fmt.Errorf("unknown sink type %d", j.Sink.Type)
+		return "", 0, errors.New(i18n.Tf("runner.unknown_sink_type", map[string]any{"Type": j.Sink.Type}))
 	}
 }
 

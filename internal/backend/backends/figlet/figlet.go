@@ -32,7 +32,11 @@ func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Optio
 		return backend.Wrap(b.Name(), in, out, err)
 	}
 
-	args := []string{"-f", "standard"}
+	font := opts.Get("figlet", "font")
+	if font == "" {
+		font = "standard"
+	}
+	args := []string{"-f", font}
 	args = append(args, opts.ExtraArgs...)
 
 	var stderr bytes.Buffer

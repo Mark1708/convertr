@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,12 +10,13 @@ import (
 	"github.com/spf13/cobra"
 
 	"git.mark1708.ru/me/convertr/internal/formats"
+	"git.mark1708.ru/me/convertr/internal/i18n"
 )
 
 func newInfoCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "info FILE",
-		Short: "Show metadata about a file",
+		Short: i18n.T("cli.info.short"),
 		Args:  cobra.ExactArgs(1),
 		RunE:  runInfo,
 	}
@@ -23,13 +25,13 @@ func newInfoCmd() *cobra.Command {
 func runInfo(cmd *cobra.Command, args []string) error {
 	path := args[0]
 	if _, err := os.Stat(path); err != nil {
-		return fmt.Errorf("file not found: %s", path)
+		return errors.New(i18n.Tf("error.file_not_found", map[string]any{"Path": path}))
 	}
 
-	fmt.Fprintf(cmd.OutOrStdout(), "file:   %s\n", path)
+	fmt.Fprintln(cmd.OutOrStdout(), i18n.Tf("cli.info.file_label", map[string]any{"Path": path}))
 
 	if f, _ := formats.DetectFile(path); f != nil {
-		fmt.Fprintf(cmd.OutOrStdout(), "format: %s (%s)\n", f.ID, f.Category)
+		fmt.Fprintln(cmd.OutOrStdout(), i18n.Tf("cli.info.format_label", map[string]any{"ID": f.ID, "Category": f.Category}))
 	}
 
 	// Try ffprobe first (best for audio/video).

@@ -14,6 +14,7 @@ import (
 
 	"git.mark1708.ru/me/convertr/internal/backend"
 	"git.mark1708.ru/me/convertr/internal/formats"
+	"git.mark1708.ru/me/convertr/internal/i18n"
 	"git.mark1708.ru/me/convertr/internal/router"
 	"git.mark1708.ru/me/convertr/internal/runner"
 	"git.mark1708.ru/me/convertr/internal/sink"
@@ -34,7 +35,7 @@ func newWatchCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "watch SRC -o DST",
-		Short: "Watch a directory and convert new/changed files",
+		Short: i18n.T("cli.watch.short"),
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runWatch(cmd, args[0], f)
@@ -42,11 +43,11 @@ func newWatchCmd() *cobra.Command {
 	}
 
 	fl := cmd.Flags()
-	fl.StringVarP(&f.output, "output", "o", "", "output directory (required)")
-	fl.StringVar(&f.toFormat, "to", "", "target format ID (e.g. md, html)")
-	fl.StringVar(&f.fromFormat, "from", "", "source format override")
-	fl.DurationVar(&f.debounce, "debounce", 300*time.Millisecond, "debounce interval")
-	fl.StringVar(&f.onDelete, "on-delete", "keep", "delete policy: keep|remove|archive")
+	fl.StringVarP(&f.output, "output", "o", "", i18n.T("cli.flag.watch.output"))
+	fl.StringVar(&f.toFormat, "to", "", i18n.T("cli.flag.watch.to"))
+	fl.StringVar(&f.fromFormat, "from", "", i18n.T("cli.flag.watch.from"))
+	fl.DurationVar(&f.debounce, "debounce", 300*time.Millisecond, i18n.T("cli.flag.watch.debounce"))
+	fl.StringVar(&f.onDelete, "on-delete", "keep", i18n.T("cli.flag.watch.on_delete"))
 	_ = cmd.MarkFlagRequired("output")
 
 	return cmd
@@ -54,7 +55,7 @@ func newWatchCmd() *cobra.Command {
 
 func runWatch(cmd *cobra.Command, src string, f watchFlags) error {
 	if f.toFormat == "" {
-		return fmt.Errorf("watch requires --to FORMAT")
+		return errors.New(i18n.T("error.watch_needs_to"))
 	}
 
 	deletePolicy, err := watch.ParseDeletePolicy(f.onDelete)
@@ -69,12 +70,12 @@ func runWatch(cmd *cobra.Command, src string, f watchFlags) error {
 
 	watcher, events, err := watch.New(cfg)
 	if err != nil {
-		return fmt.Errorf("create watcher: %w", err)
+		return fmt.Errorf("%s: %w", i18n.T("error.watch_create"), err)
 	}
 	defer watcher.Close()
 
 	if err := watcher.Add(src); err != nil {
-		return fmt.Errorf("watch %s: %w", src, err)
+		return fmt.Errorf("%s: %w", i18n.Tf("error.watch_start", map[string]any{"Path": src}), err)
 	}
 
 	sk := &sink.Sink{
@@ -88,12 +89,12 @@ func runWatch(cmd *cobra.Command, src string, f watchFlags) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	fmt.Fprintf(cmd.OutOrStdout(), "Watching %s → %s (Ctrl+C to stop)\n", src, f.output)
+	fmt.Fprintln(cmd.OutOrStdout(), i18n.Tf("watch.watching", map[string]any{"Src": src, "Dst": f.output}))
 
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Fprintln(cmd.OutOrStdout(), "\nStopped.")
+			fmt.Fprintln(cmd.OutOrStdout(), i18n.T("watch.stopped"))
 			return nil
 		case ev, ok := <-events:
 			if !ok {

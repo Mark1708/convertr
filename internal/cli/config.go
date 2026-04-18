@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,13 +10,14 @@ import (
 	"github.com/spf13/cobra"
 
 	"git.mark1708.ru/me/convertr/internal/config"
+	"git.mark1708.ru/me/convertr/internal/i18n"
 	"git.mark1708.ru/me/convertr/internal/xdg"
 )
 
 func newConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
-		Short: "Manage convertr configuration",
+		Short: i18n.T("cli.config.short"),
 	}
 	cmd.AddCommand(
 		newConfigPrintCmd(),
@@ -28,7 +30,7 @@ func newConfigCmd() *cobra.Command {
 func newConfigPrintCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "print",
-		Short: "Show active configuration with value sources",
+		Short: i18n.T("cli.config.print.short"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			loaded, err := config.Load(rootFlags.Config)
 			if err != nil {
@@ -38,7 +40,7 @@ func newConfigPrintCmd() *cobra.Command {
 				loaded.Config = config.MergeProfile(loaded.Config, rootFlags.Profile)
 			}
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-			fmt.Fprintln(tw, "FIELD\tVALUE\tSOURCE")
+			fmt.Fprintln(tw, i18n.T("cli.config.table_header"))
 			fmt.Fprintf(tw, "quality\t%d\t%s\n", loaded.Defaults.Quality, loaded.Sources.Quality)
 			fmt.Fprintf(tw, "workers\t%d\t%s\n", loaded.Defaults.Workers, loaded.Sources.Workers)
 			fmt.Fprintf(tw, "on_error\t%s\t%s\n", loaded.Defaults.OnError, loaded.Sources.OnError)
@@ -51,17 +53,17 @@ func newConfigPrintCmd() *cobra.Command {
 func newConfigInitCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "init",
-		Short: "Create a default config file",
+		Short: i18n.T("cli.config.init.short"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			path := rootFlags.Config
 			if path == "" {
 				path = xdg.ConfigPath()
 			}
 			if _, err := os.Stat(path); err == nil {
-				return fmt.Errorf("config file already exists: %s", path)
+				return errors.New(i18n.Tf("error.config_exists", map[string]any{"Path": path}))
 			}
 			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-				return fmt.Errorf("create config dir: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("error.create_config_dir"), err)
 			}
 			const template = `# convertr configuration
 # https://git.mark1708.ru/me/convertr
@@ -79,9 +81,9 @@ on_conflict = "overwrite" # overwrite | skip | rename | error
 # quality = 100
 `
 			if err := os.WriteFile(path, []byte(template), 0o644); err != nil {
-				return fmt.Errorf("write config: %w", err)
+				return fmt.Errorf("%s: %w", i18n.T("error.write_config"), err)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "created %s\n", path)
+			fmt.Fprintln(cmd.OutOrStdout(), i18n.Tf("output.config_created", map[string]any{"Path": path}))
 			return nil
 		},
 	}
@@ -90,19 +92,19 @@ on_conflict = "overwrite" # overwrite | skip | rename | error
 func newConfigValidateCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "validate",
-		Short: "Validate config file syntax",
+		Short: i18n.T("cli.config.validate.short"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			path := rootFlags.Config
 			if path == "" {
-				return fmt.Errorf("no config file specified")
+				return errors.New(i18n.T("error.config_no_path"))
 			}
 			if _, err := os.Stat(path); err != nil {
-				return fmt.Errorf("config file not found: %s", path)
+				return errors.New(i18n.Tf("error.config_not_found", map[string]any{"Path": path}))
 			}
 			if _, err := config.Load(path); err != nil {
 				return err
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "ok: %s\n", path)
+			fmt.Fprintln(cmd.OutOrStdout(), i18n.Tf("output.config_ok", map[string]any{"Path": path}))
 			return nil
 		},
 	}

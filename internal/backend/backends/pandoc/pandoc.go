@@ -81,9 +81,29 @@ func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Optio
 		args = append(args, "--to", pandocFormat(to))
 	}
 
-	// Prefer xelatex for PDF output; fall back to pdflatex.
+	// Named options: toc, standalone, highlight, template, pdf_engine.
+	if opts.Get("pandoc", "toc") == "true" {
+		args = append(args, "--toc")
+	}
+	if opts.Get("pandoc", "standalone") == "true" {
+		args = append(args, "-s")
+	}
+	if style := opts.Get("pandoc", "highlight"); style != "" {
+		args = append(args, "--highlight-style", style)
+	}
+	if tpl := opts.Get("pandoc", "template"); tpl != "" {
+		args = append(args, "--template", tpl)
+	}
+
+	if opts.StripMeta {
+		args = append(args, "--strip-comments")
+	}
+
+	// PDF engine: explicit override takes priority, then auto-detect.
 	if isPDF(out) {
-		if _, err := exec.LookPath("xelatex"); err == nil {
+		if engine := opts.Get("pandoc", "pdf_engine"); engine != "" {
+			args = append(args, "--pdf-engine="+engine)
+		} else if _, err := exec.LookPath("xelatex"); err == nil {
 			args = append(args, "--pdf-engine=xelatex")
 		} else if _, err := exec.LookPath("pdflatex"); err == nil {
 			args = append(args, "--pdf-engine=pdflatex")

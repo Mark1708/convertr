@@ -12,6 +12,7 @@ import (
 
 	"git.mark1708.ru/me/convertr/internal/backend"
 	"git.mark1708.ru/me/convertr/internal/formats"
+	"git.mark1708.ru/me/convertr/internal/i18n"
 	"git.mark1708.ru/me/convertr/internal/router"
 	"git.mark1708.ru/me/convertr/internal/runner"
 	"git.mark1708.ru/me/convertr/internal/sink"
@@ -28,6 +29,8 @@ type convertFlags struct {
 	onConflict string
 	recursive  bool
 	mkdir      bool
+	named      []string
+	stripMeta  bool
 }
 
 // addConvertToRoot registers conversion flags on the root command and sets RunE.
@@ -37,15 +40,17 @@ func addConvertToRoot(root *cobra.Command) {
 	var f convertFlags
 
 	fl := root.Flags()
-	fl.StringVarP(&f.output, "output", "o", "", "output file or directory (\"-\" for stdout)")
-	fl.StringVar(&f.toFormat, "to", "", "target format ID (e.g. md, pdf, mp3)")
-	fl.StringVar(&f.fromFormat, "from", "", "source format override")
-	fl.BoolVar(&f.dryRun, "dry-run", false, "print planned conversions without executing")
-	fl.IntVarP(&f.workers, "workers", "j", 1, "parallel workers")
-	fl.StringVar(&f.onError, "on-error", "skip", "error policy: skip|stop|retry")
-	fl.StringVar(&f.onConflict, "on-conflict", "overwrite", "conflict policy: overwrite|skip|rename|error")
-	fl.BoolVarP(&f.recursive, "recursive", "r", false, "recurse into directories")
-	fl.BoolVar(&f.mkdir, "mkdir", false, "create output directory if it does not exist")
+	fl.StringVarP(&f.output, "output", "o", "", i18n.T("cli.flag.output"))
+	fl.StringVar(&f.toFormat, "to", "", i18n.T("cli.flag.to"))
+	fl.StringVar(&f.fromFormat, "from", "", i18n.T("cli.flag.from"))
+	fl.BoolVar(&f.dryRun, "dry-run", false, i18n.T("cli.flag.dry_run"))
+	fl.IntVarP(&f.workers, "workers", "j", 1, i18n.T("cli.flag.workers"))
+	fl.StringVar(&f.onError, "on-error", "skip", i18n.T("cli.flag.on_error"))
+	fl.StringVar(&f.onConflict, "on-conflict", "overwrite", i18n.T("cli.flag.on_conflict"))
+	fl.BoolVarP(&f.recursive, "recursive", "r", false, i18n.T("cli.flag.recursive"))
+	fl.BoolVar(&f.mkdir, "mkdir", false, i18n.T("cli.flag.mkdir"))
+	fl.StringArrayVar(&f.named, "named", nil, i18n.T("cli.flag.named"))
+	fl.BoolVar(&f.stripMeta, "strip-meta", false, i18n.T("cli.flag.strip_meta"))
 
 	root.Args = cobra.ArbitraryArgs
 	root.RunE = func(cmd *cobra.Command, args []string) error {
@@ -69,12 +74,14 @@ func runConvert(cmd *cobra.Command, args []string, f convertFlags) error {
 		return err
 	}
 
+	namedMap := parseNamed(f.named)
+
 	// Build source iterators.
 	var srcs []iter.Seq2[source.SourceFile, error]
 	for _, arg := range args {
 		if arg == "-" {
 			if f.fromFormat == "" {
-				return fmt.Errorf("stdin input (\"-\") requires --from FORMAT")
+				return errors.New(i18n.T("error.stdin_needs_from"))
 			}
 			srcs = append(srcs, source.StdinSource(f.fromFormat))
 		} else {
@@ -89,7 +96,7 @@ func runConvert(cmd *cobra.Command, args []string, f convertFlags) error {
 			return fmt.Errorf("reading input: %w", err)
 		}
 		if sf.Format == "" {
-			return fmt.Errorf("cannot determine format of %q: use --from FORMAT", sf.Path)
+			return errors.New(i18n.Tf("error.unknown_format", map[string]any{"Path": sf.Path}))
 		}
 		route, err := g.Find(sf.Format, toFormat)
 		if err != nil {
@@ -98,11 +105,19 @@ func runConvert(cmd *cobra.Command, args []string, f convertFlags) error {
 			}
 			return err
 		}
-		jobs = append(jobs, runner.Job{Source: sf, Route: route, Sink: nil})
+		jobs = append(jobs, runner.Job{
+			Source: sf,
+			Route:  route,
+			Sink:   nil,
+			Opts: backend.Options{
+				Named:     namedMap,
+				StripMeta: f.stripMeta,
+			},
+		})
 	}
 
 	if len(jobs) == 0 {
-		return fmt.Errorf("no input files found")
+		return errors.New(i18n.T("error.no_input_files"))
 	}
 
 	// Resolve sink now that we know how many jobs there are.
@@ -119,20 +134,20 @@ func runConvert(cmd *cobra.Command, args []string, f convertFlags) error {
 		if _, err := os.Stat(sk.Path); os.IsNotExist(err) {
 			if f.mkdir {
 				if err := os.MkdirAll(sk.Path, 0o755); err != nil {
-					return fmt.Errorf("create output directory: %w", err)
+					return fmt.Errorf("%s: %w", i18n.T("error.create_outdir"), err)
 				}
 			} else if isInteractive(cmd) {
-				fmt.Fprintf(cmd.ErrOrStderr(), "Output directory does not exist: %s\nCreate it? [y/N] ", sk.Path)
+				fmt.Fprint(cmd.ErrOrStderr(), i18n.Tf("error.outdir_missing_prompt", map[string]any{"Path": sk.Path}))
 				var answer string
 				fmt.Fscan(cmd.InOrStdin(), &answer)
 				if answer != "y" && answer != "Y" {
-					return fmt.Errorf("output directory %q does not exist; use --mkdir to create it automatically", sk.Path)
+					return errors.New(i18n.Tf("error.outdir_missing", map[string]any{"Path": sk.Path}))
 				}
 				if err := os.MkdirAll(sk.Path, 0o755); err != nil {
-					return fmt.Errorf("create output directory: %w", err)
+					return fmt.Errorf("%s: %w", i18n.T("error.create_outdir"), err)
 				}
 			} else {
-				return fmt.Errorf("output directory %q does not exist; use --mkdir to create it automatically", sk.Path)
+				return errors.New(i18n.Tf("error.outdir_missing", map[string]any{"Path": sk.Path}))
 			}
 		}
 	}
@@ -159,8 +174,11 @@ func runConvert(cmd *cobra.Command, args []string, f convertFlags) error {
 
 	summary, err := runner.Execute(cmd.Context(), jobs, opts)
 	if summary != nil && (summary.OK+summary.Fail+summary.Skip) > 1 {
-		fmt.Fprintf(cmd.ErrOrStderr(), "done: %d ok, %d failed, %d skipped\n",
-			summary.OK, summary.Fail, summary.Skip)
+		fmt.Fprintln(cmd.ErrOrStderr(), i18n.Tf("runner.summary", map[string]any{
+			"OK":   summary.OK,
+			"Fail": summary.Fail,
+			"Skip": summary.Skip,
+		}))
 	}
 	return err
 }
@@ -177,7 +195,7 @@ func resolveTargetFormat(toFlag, output string) (string, error) {
 			}
 		}
 	}
-	return "", fmt.Errorf("cannot determine target format: use --to FORMAT or provide an output with a known extension")
+	return "", errors.New(i18n.T("error.target_format_unknown"))
 }
 
 func resolveInputArg(arg, fromFormat string, recursive bool) iter.Seq2[source.SourceFile, error] {
@@ -217,4 +235,18 @@ func isInteractive(cmd *cobra.Command) bool {
 		return false
 	}
 	return (stat.Mode() & os.ModeCharDevice) != 0
+}
+
+// parseNamed parses a slice of "key=value" strings into a map.
+func parseNamed(kvs []string) map[string]string {
+	if len(kvs) == 0 {
+		return nil
+	}
+	m := make(map[string]string, len(kvs))
+	for _, kv := range kvs {
+		if idx := strings.IndexByte(kv, '='); idx >= 0 {
+			m[kv[:idx]] = kv[idx+1:]
+		}
+	}
+	return m
 }

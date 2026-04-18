@@ -10,12 +10,13 @@ import (
 	"github.com/spf13/cobra"
 
 	plugindiscovery "git.mark1708.ru/me/convertr/internal/backend/backends/plugin"
+	"git.mark1708.ru/me/convertr/internal/i18n"
 )
 
 func newPluginsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "plugins",
-		Short: "Manage external plugin backends",
+		Short: i18n.T("cli.plugins.short"),
 	}
 	cmd.AddCommand(
 		newPluginsListCmd(),
@@ -27,15 +28,15 @@ func newPluginsCmd() *cobra.Command {
 func newPluginsListCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
-		Short: "List convertr-* plugins found in PATH",
+		Short: i18n.T("cli.plugins.list.short"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			plugins := findPluginExecutables()
 			if len(plugins) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "no plugins found in PATH")
+				fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.plugins.none_found"))
 				return nil
 			}
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-			fmt.Fprintln(tw, "PLUGIN\tPATH")
+			fmt.Fprintln(tw, i18n.T("cli.plugins.table_list"))
 			for _, p := range plugins {
 				fmt.Fprintf(tw, "%s\t%s\n", p.name, p.path)
 			}
@@ -47,15 +48,15 @@ func newPluginsListCmd() *cobra.Command {
 func newPluginsTestCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "test",
-		Short: "Test each plugin by calling its capabilities sub-command",
+		Short: i18n.T("cli.plugins.test.short"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			plugins := findPluginExecutables()
 			if len(plugins) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "no plugins found in PATH")
+				fmt.Fprintln(cmd.OutOrStdout(), i18n.T("cli.plugins.none_found"))
 				return nil
 			}
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-			fmt.Fprintln(tw, "PLUGIN\tSTATUS\tCAPABILITIES")
+			fmt.Fprintln(tw, i18n.T("cli.plugins.table_test"))
 			for _, p := range plugins {
 				caps, err := plugindiscovery.ProbePlugin(p.name)
 				if err != nil {

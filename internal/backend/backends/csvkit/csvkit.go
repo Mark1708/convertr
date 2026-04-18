@@ -45,9 +45,12 @@ func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Optio
 }
 
 func (b Backend) xlsxToCSV(ctx context.Context, in, out string, opts backend.Options) error {
-	// Prefer in2csv (csvkit); fall back to xlsx2csv.
 	if _, err := exec.LookPath("in2csv"); err == nil {
-		args := append([]string{in}, opts.ExtraArgs...)
+		args := []string{in}
+		if sheet := opts.Get("csvkit", "sheet"); sheet != "" {
+			args = append(args, "--sheet", sheet)
+		}
+		args = append(args, opts.ExtraArgs...)
 		data, err := execx.Output(ctx, "in2csv", args...)
 		if err != nil {
 			return backend.Wrap(b.Name(), in, out, err)
@@ -68,7 +71,11 @@ func (b Backend) csvToJSON(ctx context.Context, in, out string, opts backend.Opt
 	if _, err := exec.LookPath("csvjson"); err != nil {
 		return backend.Wrap(b.Name(), in, out, errNoBinary("csvjson"))
 	}
-	args := append([]string{in}, opts.ExtraArgs...)
+	args := []string{in}
+	if delim := opts.Get("csvkit", "delimiter"); delim != "" {
+		args = append(args, "--delimiter", delim)
+	}
+	args = append(args, opts.ExtraArgs...)
 	data, err := execx.Output(ctx, "csvjson", args...)
 	if err != nil {
 		return backend.Wrap(b.Name(), in, out, err)
