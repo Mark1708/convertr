@@ -17,11 +17,11 @@ const (
 
 // Format describes a single file format.
 type Format struct {
-	ID         string     // canonical id: "md", "docx", "mp4"
+	ID         string // canonical id: "md", "docx", "mp4"
 	Category   Category
-	Extensions []string   // includes leading dot: ".md", ".markdown"
+	Extensions []string // includes leading dot: ".md", ".markdown"
 	MimeTypes  []string
-	Text       bool       // true for text-based formats (safe to pipe via stdin)
+	Text       bool // true for text-based formats (safe to pipe via stdin)
 }
 
 // ID returns the canonical format id for the given extension (without dot).

@@ -14,6 +14,6 @@ type Reporter interface {
 // Noop is a reporter that discards all events (used with --quiet).
 type Noop struct{}
 
-func (Noop) Start(_ int)                          {}
-func (Noop) Update(_, _ int, _ string, _ error)   {}
-func (Noop) Done()                                {}
+func (Noop) Start(_ int)                        {}
+func (Noop) Update(_, _ int, _ string, _ error) {}
+func (Noop) Done()                              {}

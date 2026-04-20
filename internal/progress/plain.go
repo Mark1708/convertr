@@ -15,8 +15,8 @@ type Plain struct {
 // NewPlain creates a plain-text reporter writing to w.
 func NewPlain(w io.Writer) *Plain { return &Plain{w: w} }
 
-func (p *Plain) Start(n int)  { p.total = n }
-func (p *Plain) Done()        {}
+func (p *Plain) Start(n int) { p.total = n }
+func (p *Plain) Done()       {}
 
 func (p *Plain) Update(done, total int, name string, err error) {
 	base := filepath.Base(name)

@@ -19,11 +19,21 @@ type item struct {
 
 type priorityQueue []*item
 
-func (pq priorityQueue) Len() int            { return len(pq) }
-func (pq priorityQueue) Less(i, j int) bool  { return pq[i].cost < pq[j].cost }
-func (pq priorityQueue) Swap(i, j int)       { pq[i], pq[j] = pq[j], pq[i]; pq[i].index = i; pq[j].index = j }
-func (pq *priorityQueue) Push(x interface{}) { it := x.(*item); it.index = len(*pq); *pq = append(*pq, it) }
-func (pq *priorityQueue) Pop() interface{}   { old := *pq; n := len(old); it := old[n-1]; *pq = old[:n-1]; return it }
+func (pq priorityQueue) Len() int           { return len(pq) }
+func (pq priorityQueue) Less(i, j int) bool { return pq[i].cost < pq[j].cost }
+func (pq priorityQueue) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i]; pq[i].index = i; pq[j].index = j }
+func (pq *priorityQueue) Push(x interface{}) {
+	it := x.(*item)
+	it.index = len(*pq)
+	*pq = append(*pq, it)
+}
+func (pq *priorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	it := old[n-1]
+	*pq = old[:n-1]
+	return it
+}
 
 // Find returns the lowest-cost route from src to dst, or ErrNoRoute.
 func (g *Graph) Find(src, dst string) (*Route, error) {

@@ -16,8 +16,8 @@ var (
 type Capability struct {
 	From    string
 	To      string
-	Cost    int  // 1=fast, 5=slow/lossy
-	Quality int  // 0-100
+	Cost    int // 1=fast, 5=slow/lossy
+	Quality int // 0-100
 	Lossy   bool
 }
 

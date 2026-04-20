@@ -12,10 +12,10 @@ type mockBackend struct {
 	caps []backend.Capability
 }
 
-func (m mockBackend) Name() string                                                       { return m.name }
-func (m mockBackend) BinaryName() string                                                 { return m.name }
-func (m mockBackend) Capabilities() []backend.Capability                                 { return m.caps }
-func (m mockBackend) Convert(_ context.Context, _, _ string, _ backend.Options) error    { return nil }
+func (m mockBackend) Name() string                                                    { return m.name }
+func (m mockBackend) BinaryName() string                                              { return m.name }
+func (m mockBackend) Capabilities() []backend.Capability                              { return m.caps }
+func (m mockBackend) Convert(_ context.Context, _, _ string, _ backend.Options) error { return nil }
 
 func buildTestGraph(backends ...backend.Backend) *Graph {
 	g := &Graph{adj: make(map[string][]edge), backends: backends}

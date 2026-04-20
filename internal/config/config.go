@@ -3,16 +3,16 @@ package config
 
 // Config is the top-level configuration structure.
 type Config struct {
-	Defaults DefaultsConfig            `toml:"defaults"`
-	Backend  map[string]BackendConfig  `toml:"backend"`
-	Profile  map[string]ProfileConfig  `toml:"profile"`
+	Defaults DefaultsConfig           `toml:"defaults"`
+	Backend  map[string]BackendConfig `toml:"backend"`
+	Profile  map[string]ProfileConfig `toml:"profile"`
 }
 
 // DefaultsConfig holds global defaults applied to every conversion.
 type DefaultsConfig struct {
-	Quality    int    `toml:"quality"`    // 0 = unset
-	Workers    int    `toml:"workers"`    // 0 = GOMAXPROCS
-	OnError    string `toml:"on_error"`   // skip|stop|retry
+	Quality    int    `toml:"quality"`     // 0 = unset
+	Workers    int    `toml:"workers"`     // 0 = GOMAXPROCS
+	OnError    string `toml:"on_error"`    // skip|stop|retry
 	OnConflict string `toml:"on_conflict"` // overwrite|skip|rename|error
 }
 
