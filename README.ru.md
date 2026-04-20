@@ -2,9 +2,10 @@
 
 > Универсальный CLI-конвертер для 50+ форматов файлов — один бинарник, множество бэкендов.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Mark1708/convertr)](https://goreportcard.com/report/github.com/Mark1708/convertr)
+[![CI](https://github.com/Mark1708/convertr/actions/workflows/ci.yml/badge.svg)](https://github.com/Mark1708/convertr/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/Mark1708/convertr.svg)](https://pkg.go.dev/github.com/Mark1708/convertr)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Mark1708/convertr)](https://goreportcard.com/report/github.com/Mark1708/convertr)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 convertr объединяет pandoc, ffmpeg, LibreOffice, ImageMagick, jq, yq, Tesseract и ещё десяток инструментов за единым интерфейсом `convertr FILE -o OUT`. Он автоматически находит кратчайший путь конвертации — вам больше не нужно помнить, какой бинарник обрабатывает какой формат.
 
