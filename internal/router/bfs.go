@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 
-	"git.mark1708.ru/me/convertr/internal/backend"
+	"github.com/Mark1708/convertr/internal/backend"
 )
 
 const maxHops = 4

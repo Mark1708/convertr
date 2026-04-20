@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"git.mark1708.ru/me/convertr/internal/backend/execx"
-	"git.mark1708.ru/me/convertr/internal/i18n"
+	"github.com/Mark1708/convertr/internal/backend/execx"
+	"github.com/Mark1708/convertr/internal/i18n"
 )
 
 type depSpec struct {

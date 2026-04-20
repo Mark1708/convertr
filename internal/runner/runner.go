@@ -8,10 +8,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"git.mark1708.ru/me/convertr/internal/formats"
-	"git.mark1708.ru/me/convertr/internal/i18n"
-	"git.mark1708.ru/me/convertr/internal/progress"
-	"git.mark1708.ru/me/convertr/internal/sink"
+	"github.com/Mark1708/convertr/internal/formats"
+	"github.com/Mark1708/convertr/internal/i18n"
+	"github.com/Mark1708/convertr/internal/progress"
+	"github.com/Mark1708/convertr/internal/sink"
 )
 
 // ErrorPolicy controls what happens when a job fails.

@@ -1,10 +1,10 @@
 package runner
 
 import (
-	"git.mark1708.ru/me/convertr/internal/backend"
-	"git.mark1708.ru/me/convertr/internal/router"
-	"git.mark1708.ru/me/convertr/internal/sink"
-	"git.mark1708.ru/me/convertr/internal/source"
+	"github.com/Mark1708/convertr/internal/backend"
+	"github.com/Mark1708/convertr/internal/router"
+	"github.com/Mark1708/convertr/internal/sink"
+	"github.com/Mark1708/convertr/internal/source"
 )
 
 // Job is a single conversion unit.

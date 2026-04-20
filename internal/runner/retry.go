@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"time"
 
-	"git.mark1708.ru/me/convertr/internal/backend"
+	"github.com/Mark1708/convertr/internal/backend"
 )
 
 // RetryOpts configures exponential backoff retry behaviour.

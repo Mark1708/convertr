@@ -5,9 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"git.mark1708.ru/me/convertr/internal/i18n"
-	"git.mark1708.ru/me/convertr/internal/slogx"
-	"git.mark1708.ru/me/convertr/internal/xdg"
+	"github.com/Mark1708/convertr/internal/i18n"
+	"github.com/Mark1708/convertr/internal/slogx"
+	"github.com/Mark1708/convertr/internal/xdg"
 )
 
 // RootFlags holds global persistent flags.

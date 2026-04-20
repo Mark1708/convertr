@@ -1,10 +1,33 @@
 # convertr
 
-> Универсальный конвертер файловых форматов. Один бинарник, множество бэкендов, автоматическая маршрутизация.
+> Универсальный CLI-конвертер для 50+ форматов файлов — один бинарник, множество бэкендов.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Mark1708/convertr)](https://goreportcard.com/report/github.com/Mark1708/convertr)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Mark1708/convertr.svg)](https://pkg.go.dev/github.com/Mark1708/convertr)
 
 convertr объединяет pandoc, ffmpeg, LibreOffice, ImageMagick, jq, yq, Tesseract и ещё десяток инструментов за единым интерфейсом `convertr FILE -o OUT`. Он автоматически находит кратчайший путь конвертации — вам больше не нужно помнить, какой бинарник обрабатывает какой формат.
+
+**Документы:** MD · DOCX · PDF · ODT · HTML · EPUB · RST · TeX · PPTX  
+**Изображения:** JPG · PNG · WebP · SVG · AVIF · HEIC · GIF  
+**Видео:** MP4 · MKV · WebM · AVI · MOV  
+**Аудио:** MP3 · FLAC · AAC · WAV · OGG  
+**Данные:** JSON · YAML · TOML · CSV · XLSX  
+**OCR:** изображение → текст через Tesseract
+
+---
+
+## Почему convertr?
+
+Большинство конвертаций требуют разных инструментов: `pandoc` для документов,
+`ffmpeg` для видео, `convert` для изображений. convertr объединяет их все —
+просто укажите исходный и целевой форматы, и он сам выберет нужный бэкенд,
+при необходимости объединяя несколько инструментов в цепочку.
+
+- Не нужно помнить форматы — просто укажите источник и цель
+- Пакетная конвертация с параллельными воркерами и политиками повторов
+- Режим наблюдения: автоконвертация при изменении файла
+- Протокол плагинов для собственных бэкендов
 
 ---
 
@@ -29,7 +52,7 @@ convertr объединяет pandoc, ffmpeg, LibreOffice, ImageMagick, jq, yq, 
 ### `go install`
 
 ```sh
-go install git.mark1708.ru/me/convertr/cmd/convertr@latest
+go install github.com/Mark1708/convertr/cmd/convertr@latest
 ```
 
 Требуется Go 1.25+.
@@ -43,7 +66,7 @@ brew install mark1708/tap/convertr
 ### Из исходников
 
 ```sh
-git clone https://git.mark1708.ru/me/convertr.git
+git clone https://github.com/Mark1708/convertr.git
 cd convertr
 go build -o ~/.local/bin/convertr ./cmd/convertr
 ```

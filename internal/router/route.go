@@ -1,7 +1,7 @@
 package router
 
 import (
-	"git.mark1708.ru/me/convertr/internal/backend"
+	"github.com/Mark1708/convertr/internal/backend"
 )
 
 // Step is a single conversion hop in a route.

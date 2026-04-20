@@ -9,8 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"git.mark1708.ru/me/convertr/internal/formats"
-	"git.mark1708.ru/me/convertr/internal/i18n"
+	"github.com/Mark1708/convertr/internal/formats"
+	"github.com/Mark1708/convertr/internal/i18n"
 )
 
 func newInfoCmd() *cobra.Command {

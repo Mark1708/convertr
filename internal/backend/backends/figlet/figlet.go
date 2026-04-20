@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"git.mark1708.ru/me/convertr/internal/backend"
+	"github.com/Mark1708/convertr/internal/backend"
 )
 
 func init() {

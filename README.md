@@ -1,10 +1,33 @@
 # convertr
 
-> Universal file-format converter CLI. One binary, many backends, automatic routing.
+> Universal file-format converter CLI — convert 50+ formats with one binary.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Mark1708/convertr)](https://goreportcard.com/report/github.com/Mark1708/convertr)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Mark1708/convertr.svg)](https://pkg.go.dev/github.com/Mark1708/convertr)
 
 convertr wraps pandoc, ffmpeg, LibreOffice, ImageMagick, jq, yq, Tesseract and a dozen more tools behind a single `convertr FILE -o OUT` interface. It finds the shortest conversion path automatically — you never need to remember which binary handles which format.
+
+**Documents:** MD · DOCX · PDF · ODT · HTML · EPUB · RST · TeX · PPTX  
+**Images:** JPG · PNG · WebP · SVG · AVIF · HEIC · GIF  
+**Video:** MP4 · MKV · WebM · AVI · MOV  
+**Audio:** MP3 · FLAC · AAC · WAV · OGG  
+**Data:** JSON · YAML · TOML · CSV · XLSX  
+**OCR:** image → text via Tesseract
+
+---
+
+## Why convertr?
+
+Most conversions need a different tool: `pandoc` for documents, `ffmpeg` for
+video, `convert` for images. convertr wraps them all — just specify source and
+target format, and it picks the right backend automatically, even chaining
+multiple tools when no direct route exists.
+
+- Zero format memorisation — just specify source and target
+- Batch conversion with parallel workers and retry policies
+- Watch mode: auto-convert on file save
+- Plugin protocol for custom backends
 
 ---
 
@@ -29,7 +52,7 @@ convertr wraps pandoc, ffmpeg, LibreOffice, ImageMagick, jq, yq, Tesseract and a
 ### `go install`
 
 ```sh
-go install git.mark1708.ru/me/convertr/cmd/convertr@latest
+go install github.com/Mark1708/convertr/cmd/convertr@latest
 ```
 
 Requires Go 1.25+.
@@ -43,7 +66,7 @@ brew install mark1708/tap/convertr
 ### From source
 
 ```sh
-git clone https://git.mark1708.ru/me/convertr.git
+git clone https://github.com/Mark1708/convertr.git
 cd convertr
 go build -o ~/.local/bin/convertr ./cmd/convertr
 ```

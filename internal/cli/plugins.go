@@ -9,8 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	plugindiscovery "git.mark1708.ru/me/convertr/internal/backend/backends/plugin"
-	"git.mark1708.ru/me/convertr/internal/i18n"
+	plugindiscovery "github.com/Mark1708/convertr/internal/backend/backends/plugin"
+	"github.com/Mark1708/convertr/internal/i18n"
 )
 
 func newPluginsCmd() *cobra.Command {

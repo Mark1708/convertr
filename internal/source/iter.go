@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.mark1708.ru/me/convertr/internal/formats"
+	"github.com/Mark1708/convertr/internal/formats"
 )
 
 // FileSource yields a single SourceFile for path, detecting its format.

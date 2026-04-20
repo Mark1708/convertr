@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"git.mark1708.ru/me/convertr/internal/backend"
-	"git.mark1708.ru/me/convertr/internal/backend/execx"
-	pluginpkg "git.mark1708.ru/me/convertr/pkg/plugin"
+	"github.com/Mark1708/convertr/internal/backend"
+	"github.com/Mark1708/convertr/internal/backend/execx"
+	pluginpkg "github.com/Mark1708/convertr/pkg/plugin"
 )
 
 func init() {

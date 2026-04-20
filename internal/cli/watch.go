@@ -12,14 +12,14 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"git.mark1708.ru/me/convertr/internal/backend"
-	"git.mark1708.ru/me/convertr/internal/formats"
-	"git.mark1708.ru/me/convertr/internal/i18n"
-	"git.mark1708.ru/me/convertr/internal/router"
-	"git.mark1708.ru/me/convertr/internal/runner"
-	"git.mark1708.ru/me/convertr/internal/sink"
-	"git.mark1708.ru/me/convertr/internal/source"
-	"git.mark1708.ru/me/convertr/internal/watch"
+	"github.com/Mark1708/convertr/internal/backend"
+	"github.com/Mark1708/convertr/internal/formats"
+	"github.com/Mark1708/convertr/internal/i18n"
+	"github.com/Mark1708/convertr/internal/router"
+	"github.com/Mark1708/convertr/internal/runner"
+	"github.com/Mark1708/convertr/internal/sink"
+	"github.com/Mark1708/convertr/internal/source"
+	"github.com/Mark1708/convertr/internal/watch"
 )
 
 type watchFlags struct {

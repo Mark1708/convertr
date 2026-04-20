@@ -43,7 +43,7 @@ brews:
       owner: mark1708
       name: homebrew-tap
     folder: Formula
-    homepage: https://git.mark1708.ru/me/convertr
+    homepage: https://github.com/Mark1708/convertr
     description: Universal file format converter CLI
     license: MIT
     install: |

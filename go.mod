@@ -1,4 +1,4 @@
-module git.mark1708.ru/me/convertr
+module github.com/Mark1708/convertr
 
 go 1.25.0
 

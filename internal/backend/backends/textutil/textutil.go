@@ -7,8 +7,8 @@ package textutil
 import (
 	"context"
 
-	"git.mark1708.ru/me/convertr/internal/backend"
-	"git.mark1708.ru/me/convertr/internal/backend/execx"
+	"github.com/Mark1708/convertr/internal/backend"
+	"github.com/Mark1708/convertr/internal/backend/execx"
 )
 
 func init() {

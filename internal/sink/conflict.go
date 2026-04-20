@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.mark1708.ru/me/convertr/internal/i18n"
+	"github.com/Mark1708/convertr/internal/i18n"
 )
 
 // ConflictPolicy controls what happens when the output file already exists.

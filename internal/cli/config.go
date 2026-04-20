@@ -9,9 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"git.mark1708.ru/me/convertr/internal/config"
-	"git.mark1708.ru/me/convertr/internal/i18n"
-	"git.mark1708.ru/me/convertr/internal/xdg"
+	"github.com/Mark1708/convertr/internal/config"
+	"github.com/Mark1708/convertr/internal/i18n"
+	"github.com/Mark1708/convertr/internal/xdg"
 )
 
 func newConfigCmd() *cobra.Command {
@@ -66,7 +66,7 @@ func newConfigInitCmd() *cobra.Command {
 				return fmt.Errorf("%s: %w", i18n.T("error.create_config_dir"), err)
 			}
 			const template = `# convertr configuration
-# https://git.mark1708.ru/me/convertr
+# https://github.com/Mark1708/convertr
 
 [defaults]
 quality     = 85
