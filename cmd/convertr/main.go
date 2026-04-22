@@ -18,8 +18,7 @@ import (
 	_ "github.com/Mark1708/convertr/internal/backend/backends/pandoc"
 	_ "github.com/Mark1708/convertr/internal/backend/backends/plugin"
 	_ "github.com/Mark1708/convertr/internal/backend/backends/tesseract"
-	_ "github.com/Mark1708/convertr/internal/backend/backends/textutil"
-	_ "github.com/Mark1708/convertr/internal/backend/backends/yq"
+_ "github.com/Mark1708/convertr/internal/backend/backends/yq"
 )
 
 // Version is set by goreleaser via -ldflags.
