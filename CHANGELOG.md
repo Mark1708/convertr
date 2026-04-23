@@ -19,6 +19,8 @@ Internal packages (`internal/`) are not part of the public API.
 - i18n language detection from `$LANG` environment variable now persists through command execution (previously reset to English by `PersistentPreRunE`)
 - **PDF output with Cyrillic** (and other non-Latin scripts) is now readable out of the box: `xelatex`/`lualatex` receives `-V mainfont` / `-V monofont` / `-V sansfont` with OS-appropriate defaults plus `-V geometry:margin=2cm`. User-supplied values via `--named pandoc.mainfont=...` or `-V …` in `extra_args` always win
 - `[backend.*] extra_args` from `config.toml` are now actually applied during `convert` — previously the config was not loaded and only the CLI `--named` flags took effect
+- **Router no longer picks backends whose binaries are missing.** Capabilities are filtered by `backend.IsAvailable(from, to)` at graph-build time; two backends declaring the same edge (e.g. `xlsx → csv` via csvkit and libreoffice) resolve cleanly instead of aborting mid-conversion. csvkit implements per-edge availability (in2csv/xlsx2csv vs csvjson)
+- LibreOffice backend now passes `-env:UserInstallation=…` (single-dash bootstrap variable) instead of `--env:…`, which LibreOffice 7.x+ rejects
 
 ### Changed
 - PDF engine auto-detection now prefers fontspec-aware engines: `xelatex` → `lualatex` → `pdflatex`
@@ -28,6 +30,7 @@ Internal packages (`internal/`) are not part of the public API.
 - **`[fonts]` config section** — `mainfont`, `monofont`, `sansfont` used by PDF-producing backends. `convertr config init` seeds the section with values chosen for the host OS (PT Serif/Menlo/Helvetica Neue on macOS, DejaVu family on Linux, Times New Roman/Consolas/Segoe UI on Windows)
 - **11 new formats** in the registry: `typst`, `ipynb`, `fb2`, `bibtex`, `csljson`, `mediawiki`, `dokuwiki`, `jira`, `textile`, `docbook`, `opml`
 - **21 new pandoc edges** covering Typst, Jupyter notebooks, presentations (`md ↔ pptx`), wiki dialects (`mediawiki`, `dokuwiki`, `jira`, `textile`), bibliography (`bibtex ↔ csljson`), and `fb2`/`docbook`/`opml`/`rtf → md`
+- `convertr doctor` now checks `asciidoctor` and the csvkit family (`in2csv` / `xlsx2csv` / `csvjson`), with a combined install hint that works whichever tool you prefer
 - `--mkdir` flag: automatically create the output directory without prompting
 - Multi-input directory detection: when multiple input files are given, the output path is treated as a directory even without a trailing `/`
 - Interactive `Create it? [y/N]` prompt when the output directory is missing and running in a TTY

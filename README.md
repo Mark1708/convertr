@@ -376,6 +376,13 @@ convertr version
 
 Each backend is an `init()`-registered plugin that bridges one or more external binaries to the router.
 
+convertr probes `$PATH` at startup and **excludes capabilities whose
+binaries are missing** from the conversion graph. If two backends declare
+the same edge, Dijkstra automatically picks the available one — e.g.
+`xlsx → csv` prefers `csvkit` when `in2csv`/`xlsx2csv` are installed and
+falls back to `libreoffice` otherwise. Run `convertr doctor` to see
+which binaries are detected and which are missing.
+
 ### Pandoc
 
 **Binary:** `pandoc` · `brew install pandoc` / `apt install pandoc`

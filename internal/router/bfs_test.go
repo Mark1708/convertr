@@ -128,3 +128,57 @@ func TestBFS_maxHopsRespected(t *testing.T) {
 		t.Fatal("expected ErrNoRoute for chain longer than maxHops, got nil")
 	}
 }
+
+// mockAvailBackend implements backend.Availabler so the router can
+// exercise per-edge availability filtering without touching $PATH.
+type mockAvailBackend struct {
+	mockBackend
+	avail map[[2]string]bool
+}
+
+func (m mockAvailBackend) IsAvailable(from, to string) bool {
+	return m.avail[[2]string{from, to}]
+}
+
+func TestBuildFromBackends_SkipsUnavailableEdges(t *testing.T) {
+	// Two backends with equal Cost for the same edge. The "real" one is
+	// unavailable (missing binary) and must be filtered out; the fallback
+	// must win even though it was registered later.
+	unavailable := mockAvailBackend{
+		mockBackend: mockBackend{name: "csvkit", caps: []backend.Capability{
+			{From: "xlsx", To: "csv", Cost: 1},
+		}},
+		avail: map[[2]string]bool{{"xlsx", "csv"}: false},
+	}
+	available := mockAvailBackend{
+		mockBackend: mockBackend{name: "libreoffice", caps: []backend.Capability{
+			{From: "xlsx", To: "csv", Cost: 1},
+		}},
+		avail: map[[2]string]bool{{"xlsx", "csv"}: true},
+	}
+
+	g := BuildFromBackends([]backend.Backend{unavailable, available})
+	route, err := g.Find("xlsx", "csv")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(route.Steps) != 1 {
+		t.Fatalf("expected single-hop route, got %d", len(route.Steps))
+	}
+	if route.Steps[0].Backend.Name() != "libreoffice" {
+		t.Errorf("expected libreoffice to win, got %q", route.Steps[0].Backend.Name())
+	}
+}
+
+func TestBuildFromBackends_NoRouteWhenAllEdgesFiltered(t *testing.T) {
+	b := mockAvailBackend{
+		mockBackend: mockBackend{name: "csvkit", caps: []backend.Capability{
+			{From: "xlsx", To: "csv", Cost: 1},
+		}},
+		avail: map[[2]string]bool{{"xlsx", "csv"}: false},
+	}
+	g := BuildFromBackends([]backend.Backend{b})
+	if _, err := g.Find("xlsx", "csv"); err == nil {
+		t.Fatal("expected ErrNoRoute when every edge is filtered, got nil")
+	}
+}

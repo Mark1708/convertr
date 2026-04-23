@@ -71,7 +71,10 @@ func (b Backend) Convert(ctx context.Context, in, out string, opts backend.Optio
 
 	args := []string{
 		"--headless",
-		fmt.Sprintf("--env:UserInstallation=%s", userInstall),
+		// Note: soffice uses single-dash -env:<VAR>=<VALUE> for bootstrap
+		// variables, not --env:. Passing --env: trips the CLI parser on
+		// LibreOffice 7.x+ and the conversion fails before it starts.
+		fmt.Sprintf("-env:UserInstallation=%s", userInstall),
 		"--convert-to", ext,
 		"--outdir", outDir,
 		in,

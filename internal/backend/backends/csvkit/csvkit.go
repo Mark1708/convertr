@@ -20,6 +20,28 @@ type Backend struct{}
 func (Backend) Name() string       { return "csvkit" }
 func (Backend) BinaryName() string { return "in2csv" }
 
+// IsAvailable returns true only for capabilities whose required binaries
+// are installed. xlsx→csv accepts either in2csv or xlsx2csv; csv→json
+// needs csvjson; xlsx→json needs both halves of the pipeline. This lets
+// the router skip edges that would otherwise fail at exec time.
+func (Backend) IsAvailable(from, to string) bool {
+	_, e1 := exec.LookPath("in2csv")
+	_, e2 := exec.LookPath("xlsx2csv")
+	_, e3 := exec.LookPath("csvjson")
+	canXlsxToCSV := e1 == nil || e2 == nil
+	canCSVToJSON := e3 == nil
+
+	switch {
+	case from == "xlsx" && to == "csv":
+		return canXlsxToCSV
+	case from == "csv" && to == "json":
+		return canCSVToJSON
+	case from == "xlsx" && to == "json":
+		return canXlsxToCSV && canCSVToJSON
+	}
+	return false
+}
+
 func (Backend) Capabilities() []backend.Capability {
 	return []backend.Capability{
 		{From: "xlsx", To: "csv", Cost: 1, Quality: 95},

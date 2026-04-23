@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
 
 	"github.com/Mark1708/convertr/internal/fonts"
 )
@@ -47,6 +48,32 @@ type Backend interface {
 	BinaryName() string
 	Capabilities() []Capability
 	Convert(ctx context.Context, in, out string, opts Options) error
+}
+
+// Availabler is an optional interface a Backend may implement to declare,
+// per-capability, whether the underlying tooling is currently installed.
+// Backends with multiple edge-specific binaries (e.g. csvkit uses
+// in2csv/xlsx2csv for xlsx→csv but csvjson for csv→json) should implement
+// this so the router can filter out edges that cannot actually run.
+//
+// If a backend does not implement Availabler, IsAvailable falls back to
+// checking whether BinaryName() is present in $PATH.
+type Availabler interface {
+	IsAvailable(from, to string) bool
+}
+
+// IsAvailable reports whether `b` can currently perform the from→to
+// capability given the host's installed binaries. The router uses this to
+// exclude unavailable edges at graph-build time so conversions never
+// attempt to invoke a missing binary.
+func IsAvailable(b Backend, from, to string) bool {
+	if a, ok := b.(Availabler); ok {
+		return a.IsAvailable(from, to)
+	}
+	if _, err := exec.LookPath(b.BinaryName()); err == nil {
+		return true
+	}
+	return false
 }
 
 // ConvertError wraps a backend error with routing context.

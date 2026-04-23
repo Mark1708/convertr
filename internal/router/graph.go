@@ -19,14 +19,28 @@ type Graph struct {
 }
 
 // Build constructs the format graph from all registered backends.
+//
+// Edges are filtered by backend.IsAvailable so that capabilities whose
+// underlying binary is missing from $PATH never appear in the graph.
+// This makes Dijkstra prefer cheap routes that can actually run instead
+// of failing at exec time on a backend with the same nominal Cost.
 func Build() *Graph {
-	backends := backend.All()
+	return BuildFromBackends(backend.All())
+}
+
+// BuildFromBackends constructs the format graph from the supplied
+// backends. Exposed for testing and for callers that need to scope a
+// graph to a subset of backends (e.g. plugin sandboxing).
+func BuildFromBackends(backends []backend.Backend) *Graph {
 	g := &Graph{
 		adj:      make(map[string][]edge),
 		backends: backends,
 	}
 	for bi, b := range backends {
 		for ci, cap := range b.Capabilities() {
+			if !backend.IsAvailable(b, cap.From, cap.To) {
+				continue
+			}
 			g.adj[cap.From] = append(g.adj[cap.From], edge{
 				to:         cap.To,
 				cost:       cap.Cost,
