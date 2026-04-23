@@ -145,6 +145,14 @@ workers     = 0        # 0 = GOMAXPROCS; > 0 = фиксированное кол
 on_error    = "skip"   # skip | stop | retry
 on_conflict = "overwrite" # overwrite | skip | rename | error
 
+# Шрифты для PDF-бэкендов (pandoc с xelatex/lualatex).
+# `convertr config init` подставляет значения под текущую ОС; пустые
+# поля откатываются к встроенным дефолтам платформы.
+[fonts]
+mainfont = "PT Serif"
+monofont = "Menlo"
+sansfont = "Helvetica Neue"
+
 # Дополнительные аргументы для конкретных бэкендов.
 [backend.pandoc]
 extra_args = ["--wrap=none", "--variable=lang:ru"]
@@ -374,7 +382,7 @@ convertr version
 
 | Из | В |
 |----|---|
-| `md` | `html` `docx` `odt` `pdf` `rst` `epub` `tex` `txt` |
+| `md` | `html` `docx` `odt` `pdf` `rst` `epub` `tex` `txt` `typst` `ipynb` `pptx` `mediawiki` `jira` `opml` |
 | `html` | `md` `docx` `pdf` `txt` |
 | `docx` | `md` `html` `pdf` `odt` `txt` `rst` |
 | `odt` | `md` `docx` `html` `txt` |
@@ -382,8 +390,19 @@ convertr version
 | `epub` | `md` `html` `txt` |
 | `tex` | `md` `html` `pdf` |
 | `org` | `md` `html` `pdf` |
+| `typst` | `md` `pdf` |
+| `ipynb` | `md` `html` `pdf` |
+| `rtf` | `md` (и далее в любой markup через pandoc-цепочку) |
+| `fb2` | `md` `html` `epub` |
+| `mediawiki` `dokuwiki` `jira` `textile` `docbook` `opml` | `md` |
+| `bibtex` ↔ `csljson` | (библиография) |
 
-PDF-вывод использует `xelatex` при наличии, иначе `pdflatex`.
+PDF-вывод выбирает `xelatex` → `lualatex` → `pdflatex` в порядке убывания
+возможностей; если выбран fontspec-совместимый движок, convertr подставляет
+шрифты из секции `[fonts]` конфига (с разумными дефолтами на каждой ОС) и
+поля `-V geometry:margin=2cm`. Любая переменная, явно указанная через
+`--named pandoc.mainfont=...` или `-V ...` в `extra_args`, отключает
+соответствующий дефолт — пользовательские значения имеют приоритет.
 
 **Конфиг:** `[backend.pandoc]` `extra_args = ["--wrap=none"]`
 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/Mark1708/convertr/internal/fonts"
 )
 
 var (
@@ -28,6 +30,7 @@ type Options struct {
 	Workers   int
 	ExtraArgs []string
 	Named     map[string]string // "backend.key" → value
+	Fonts     fonts.Config      // font preferences for PDF-producing backends
 }
 
 // Get returns the named option for a specific backend ("pandoc.wrap" etc.).

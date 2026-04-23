@@ -9,6 +9,7 @@ var known = []Format{
 	{ID: "odt", Category: CategoryDocument, Extensions: []string{".odt"}, MimeTypes: []string{"application/vnd.oasis.opendocument.text"}},
 	{ID: "rtf", Category: CategoryDocument, Extensions: []string{".rtf"}, MimeTypes: []string{"application/rtf", "text/rtf"}},
 	{ID: "epub", Category: CategoryDocument, Extensions: []string{".epub"}, MimeTypes: []string{"application/epub+zip"}},
+	{ID: "fb2", Category: CategoryDocument, Extensions: []string{".fb2"}, MimeTypes: []string{"application/x-fictionbook+xml"}, Text: true},
 	{ID: "pdf", Category: CategoryDocument, Extensions: []string{".pdf"}, MimeTypes: []string{"application/pdf"}},
 	{ID: "pptx", Category: CategoryDocument, Extensions: []string{".pptx"}, MimeTypes: []string{"application/vnd.openxmlformats-officedocument.presentationml.presentation"}},
 	{ID: "odp", Category: CategoryDocument, Extensions: []string{".odp"}, MimeTypes: []string{"application/vnd.oasis.opendocument.presentation"}},
@@ -21,6 +22,13 @@ var known = []Format{
 	{ID: "tex", Category: CategoryMarkup, Extensions: []string{".tex"}, MimeTypes: []string{"application/x-tex"}, Text: true},
 	{ID: "org", Category: CategoryMarkup, Extensions: []string{".org"}, MimeTypes: []string{}, Text: true},
 	{ID: "txt", Category: CategoryMarkup, Extensions: []string{".txt", ".text"}, MimeTypes: []string{"text/plain"}, Text: true},
+	{ID: "typst", Category: CategoryMarkup, Extensions: []string{".typ"}, MimeTypes: []string{"text/x-typst"}, Text: true},
+	{ID: "ipynb", Category: CategoryMarkup, Extensions: []string{".ipynb"}, MimeTypes: []string{"application/x-ipynb+json"}, Text: true},
+	{ID: "mediawiki", Category: CategoryMarkup, Extensions: []string{".mediawiki", ".wiki"}, MimeTypes: []string{}, Text: true},
+	{ID: "dokuwiki", Category: CategoryMarkup, Extensions: []string{".dokuwiki"}, MimeTypes: []string{}, Text: true},
+	{ID: "jira", Category: CategoryMarkup, Extensions: []string{".jira"}, MimeTypes: []string{}, Text: true},
+	{ID: "textile", Category: CategoryMarkup, Extensions: []string{".textile"}, MimeTypes: []string{"text/x-textile"}, Text: true},
+	{ID: "docbook", Category: CategoryMarkup, Extensions: []string{".docbook", ".dbk"}, MimeTypes: []string{"application/docbook+xml"}, Text: true},
 
 	// ── Data ───────────────────────────────────────────────────────────────
 	{ID: "json", Category: CategoryData, Extensions: []string{".json"}, MimeTypes: []string{"application/json"}, Text: true},
@@ -30,6 +38,9 @@ var known = []Format{
 	{ID: "tsv", Category: CategoryData, Extensions: []string{".tsv"}, MimeTypes: []string{"text/tab-separated-values"}, Text: true},
 	{ID: "xlsx", Category: CategoryData, Extensions: []string{".xlsx"}, MimeTypes: []string{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}},
 	{ID: "ods", Category: CategoryData, Extensions: []string{".ods"}, MimeTypes: []string{"application/vnd.oasis.opendocument.spreadsheet"}},
+	{ID: "bibtex", Category: CategoryData, Extensions: []string{".bib", ".bibtex"}, MimeTypes: []string{"application/x-bibtex"}, Text: true},
+	{ID: "csljson", Category: CategoryData, Extensions: []string{".csljson", ".csl.json"}, MimeTypes: []string{"application/vnd.citationstyles.csl+json"}, Text: true},
+	{ID: "opml", Category: CategoryData, Extensions: []string{".opml"}, MimeTypes: []string{"text/x-opml"}, Text: true},
 
 	// ── Image ──────────────────────────────────────────────────────────────
 	{ID: "jpg", Category: CategoryImage, Extensions: []string{".jpg", ".jpeg"}, MimeTypes: []string{"image/jpeg"}},

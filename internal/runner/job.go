@@ -13,4 +13,9 @@ type Job struct {
 	Route  *router.Route
 	Sink   *sink.Sink
 	Opts   backend.Options
+	// BackendExtraArgs maps backend name → extra pandoc/ffmpeg/etc. args
+	// sourced from config.toml ([backend.<name>] extra_args = [...]).
+	// Merged into Opts.ExtraArgs at step-execution time; CLI-supplied args
+	// stay last so they override config.
+	BackendExtraArgs map[string][]string
 }

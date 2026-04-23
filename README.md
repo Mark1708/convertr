@@ -145,6 +145,14 @@ workers     = 0        # 0 = GOMAXPROCS; > 0 = fixed count
 on_error    = "skip"   # skip | stop | retry
 on_conflict = "overwrite" # overwrite | skip | rename | error
 
+# Fonts used by PDF-producing backends (pandoc with xelatex/lualatex).
+# `convertr config init` seeds these with OS-appropriate defaults; any empty
+# field falls back to the built-in platform default.
+[fonts]
+mainfont = "PT Serif"
+monofont = "Menlo"
+sansfont = "Helvetica Neue"
+
 # Extra arguments forwarded to individual backends.
 [backend.pandoc]
 extra_args = ["--wrap=none", "--variable=lang:ru"]
@@ -374,7 +382,7 @@ Each backend is an `init()`-registered plugin that bridges one or more external 
 
 | From | To |
 |------|----|
-| `md` | `html` `docx` `odt` `pdf` `rst` `epub` `tex` `txt` |
+| `md` | `html` `docx` `odt` `pdf` `rst` `epub` `tex` `txt` `typst` `ipynb` `pptx` `mediawiki` `jira` `opml` |
 | `html` | `md` `docx` `pdf` `txt` |
 | `docx` | `md` `html` `pdf` `odt` `txt` `rst` |
 | `odt` | `md` `docx` `html` `txt` |
@@ -382,8 +390,20 @@ Each backend is an `init()`-registered plugin that bridges one or more external 
 | `epub` | `md` `html` `txt` |
 | `tex` | `md` `html` `pdf` |
 | `org` | `md` `html` `pdf` |
+| `typst` | `md` `pdf` |
+| `ipynb` | `md` `html` `pdf` |
+| `rtf` | `md` (then any markup via a pandoc chain) |
+| `fb2` | `md` `html` `epub` |
+| `mediawiki` `dokuwiki` `jira` `textile` `docbook` `opml` | `md` |
+| `bibtex` ↔ `csljson` | (bibliography) |
 
-PDF output uses `xelatex` when available, `pdflatex` otherwise.
+PDF output picks `xelatex` → `lualatex` → `pdflatex` in order of
+capability; when a fontspec-aware engine is chosen, convertr injects
+`-V mainfont` / `-V monofont` / `-V sansfont` from the `[fonts]` section
+(with OS-appropriate defaults) and `-V geometry:margin=2cm`. Any
+variable you set explicitly via `--named pandoc.mainfont=...` or a
+`-V …` entry in `extra_args` disables the matching default — user
+values always win.
 
 **Config:** `[backend.pandoc]` `extra_args = ["--wrap=none"]`
 

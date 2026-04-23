@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Mark1708/convertr/internal/config"
+	"github.com/Mark1708/convertr/internal/fonts"
 	"github.com/Mark1708/convertr/internal/i18n"
 	"github.com/Mark1708/convertr/internal/xdg"
 )
@@ -65,7 +66,8 @@ func newConfigInitCmd() *cobra.Command {
 			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 				return fmt.Errorf("%s: %w", i18n.T("error.create_config_dir"), err)
 			}
-			const template = `# convertr configuration
+			f := fonts.Default()
+			template := fmt.Sprintf(`# convertr configuration
 # https://github.com/Mark1708/convertr
 
 [defaults]
@@ -74,12 +76,20 @@ workers     = 0        # 0 = GOMAXPROCS
 on_error    = "skip"   # skip | stop | retry
 on_conflict = "overwrite" # overwrite | skip | rename | error
 
+# Fonts used by PDF-producing backends (pandoc with xelatex/lualatex).
+# Defaults are picked for the host OS; override freely. Empty values fall
+# back to the platform default.
+[fonts]
+mainfont = %q
+monofont = %q
+sansfont = %q
+
 # [backend.pandoc]
 # extra_args = ["--wrap=none"]
 
 # [profile.hi-res]
 # quality = 100
-`
+`, f.Mainfont, f.Monofont, f.Sansfont)
 			if err := os.WriteFile(path, []byte(template), 0o644); err != nil {
 				return fmt.Errorf("%s: %w", i18n.T("error.write_config"), err)
 			}

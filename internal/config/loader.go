@@ -65,6 +65,15 @@ func Load(path string) (*Loaded, error) {
 				cfg.Defaults.OnConflict = fileCfg.Defaults.OnConflict
 				src.OnConflict = SourceFile
 			}
+			if fileCfg.Fonts.Mainfont != "" {
+				cfg.Fonts.Mainfont = fileCfg.Fonts.Mainfont
+			}
+			if fileCfg.Fonts.Monofont != "" {
+				cfg.Fonts.Monofont = fileCfg.Fonts.Monofont
+			}
+			if fileCfg.Fonts.Sansfont != "" {
+				cfg.Fonts.Sansfont = fileCfg.Fonts.Sansfont
+			}
 			if fileCfg.Backend != nil {
 				cfg.Backend = fileCfg.Backend
 			}

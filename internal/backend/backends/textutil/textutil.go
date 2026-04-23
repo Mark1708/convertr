@@ -24,10 +24,13 @@ func (Backend) BinaryName() string { return "textutil" }
 func (Backend) Capabilities() []backend.Capability {
 	return []backend.Capability{
 		// Legacy Word and RTF handled natively on macOS without external deps.
-		{From: "doc", To: "txt", Cost: 1, Quality: 80},
-		{From: "doc", To: "html", Cost: 1, Quality: 80},
-		{From: "rtf", To: "txt", Cost: 1, Quality: 85},
-		{From: "rtf", To: "html", Cost: 1, Quality: 85},
+		// Cost is deliberately higher than the cross-platform pandoc edges so
+		// that Dijkstra prefers portable backends; textutil stays as a macOS
+		// fallback when pandoc is unavailable.
+		{From: "doc", To: "txt", Cost: 3, Quality: 80},
+		{From: "doc", To: "html", Cost: 3, Quality: 80},
+		{From: "rtf", To: "txt", Cost: 3, Quality: 85},
+		{From: "rtf", To: "html", Cost: 3, Quality: 85},
 	}
 }
 

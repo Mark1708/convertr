@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Mark1708/convertr/internal/backend"
+	"github.com/Mark1708/convertr/internal/config"
+	"github.com/Mark1708/convertr/internal/fonts"
 	"github.com/Mark1708/convertr/internal/formats"
 	"github.com/Mark1708/convertr/internal/i18n"
 	"github.com/Mark1708/convertr/internal/router"
@@ -67,6 +69,22 @@ func runConvert(cmd *cobra.Command, args []string, f convertFlags) error {
 		return err
 	}
 
+	loaded, err := config.Load(rootFlags.Config)
+	if err != nil {
+		return err
+	}
+	if rootFlags.Profile != "" {
+		loaded.Config = config.MergeProfile(loaded.Config, rootFlags.Profile)
+	}
+	resolvedFonts := resolveFonts(loaded.Fonts)
+
+	backendExtraArgs := make(map[string][]string, len(loaded.Backend))
+	for name, bc := range loaded.Backend {
+		if len(bc.ExtraArgs) > 0 {
+			backendExtraArgs[name] = bc.ExtraArgs
+		}
+	}
+
 	g := router.Build()
 
 	conflictPolicy, err := sink.ParseConflictPolicy(f.onConflict)
@@ -112,7 +130,9 @@ func runConvert(cmd *cobra.Command, args []string, f convertFlags) error {
 			Opts: backend.Options{
 				Named:     namedMap,
 				StripMeta: f.stripMeta,
+				Fonts:     resolvedFonts,
 			},
+			BackendExtraArgs: backendExtraArgs,
 		})
 	}
 
@@ -235,6 +255,23 @@ func isInteractive(cmd *cobra.Command) bool {
 		return false
 	}
 	return (stat.Mode() & os.ModeCharDevice) != 0
+}
+
+// resolveFonts fills in any empty font from the OS-specific defaults so that
+// backends always receive a fully-populated fonts.Config. Fields explicitly
+// set in config.toml win; zero-value fields fall back to fonts.Default().
+func resolveFonts(fromConfig fonts.Config) fonts.Config {
+	defaults := fonts.Default()
+	if fromConfig.Mainfont == "" {
+		fromConfig.Mainfont = defaults.Mainfont
+	}
+	if fromConfig.Monofont == "" {
+		fromConfig.Monofont = defaults.Monofont
+	}
+	if fromConfig.Sansfont == "" {
+		fromConfig.Sansfont = defaults.Sansfont
+	}
+	return fromConfig
 }
 
 // parseNamed parses a slice of "key=value" strings into a map.

@@ -1,9 +1,12 @@
 // Package config loads and merges convertr configuration.
 package config
 
+import "github.com/Mark1708/convertr/internal/fonts"
+
 // Config is the top-level configuration structure.
 type Config struct {
 	Defaults DefaultsConfig           `toml:"defaults"`
+	Fonts    fonts.Config             `toml:"fonts"`
 	Backend  map[string]BackendConfig `toml:"backend"`
 	Profile  map[string]ProfileConfig `toml:"profile"`
 }

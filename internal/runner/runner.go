@@ -150,6 +150,17 @@ func convertJob(ctx context.Context, j Job, finalPath string) error {
 		}
 		stepOpts.Named["step.from"] = step.From
 		stepOpts.Named["step.to"] = step.To
+
+		// Merge backend-scoped extra args from config before CLI-supplied
+		// ones so that the CLI stays authoritative (pandoc applies later
+		// flags on top of earlier ones).
+		if extra := j.BackendExtraArgs[step.Backend.Name()]; len(extra) > 0 {
+			merged := make([]string, 0, len(extra)+len(j.Opts.ExtraArgs))
+			merged = append(merged, extra...)
+			merged = append(merged, j.Opts.ExtraArgs...)
+			stepOpts.ExtraArgs = merged
+		}
+
 		if err := step.Backend.Convert(ctx, current, next, stepOpts); err != nil {
 			return err
 		}

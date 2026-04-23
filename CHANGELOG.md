@@ -17,8 +17,17 @@ Internal packages (`internal/`) are not part of the public API.
 ### Fixed
 - Pandoc backend now passes explicit `--from`/`--to` flags on every call, preventing format misdetection when the file extension doesn't match actual content (e.g. HTML saved as `.doc`)
 - i18n language detection from `$LANG` environment variable now persists through command execution (previously reset to English by `PersistentPreRunE`)
+- **PDF output with Cyrillic** (and other non-Latin scripts) is now readable out of the box: `xelatex`/`lualatex` receives `-V mainfont` / `-V monofont` / `-V sansfont` with OS-appropriate defaults plus `-V geometry:margin=2cm`. User-supplied values via `--named pandoc.mainfont=...` or `-V …` in `extra_args` always win
+- `[backend.*] extra_args` from `config.toml` are now actually applied during `convert` — previously the config was not loaded and only the CLI `--named` flags took effect
+
+### Changed
+- PDF engine auto-detection now prefers fontspec-aware engines: `xelatex` → `lualatex` → `pdflatex`
+- `textutil` backend (macOS-only) `Cost` raised from 1 to 3 so that the cross-platform `pandoc` route wins by default; `textutil` stays available as a fallback when pandoc is absent
 
 ### Added
+- **`[fonts]` config section** — `mainfont`, `monofont`, `sansfont` used by PDF-producing backends. `convertr config init` seeds the section with values chosen for the host OS (PT Serif/Menlo/Helvetica Neue on macOS, DejaVu family on Linux, Times New Roman/Consolas/Segoe UI on Windows)
+- **11 new formats** in the registry: `typst`, `ipynb`, `fb2`, `bibtex`, `csljson`, `mediawiki`, `dokuwiki`, `jira`, `textile`, `docbook`, `opml`
+- **21 new pandoc edges** covering Typst, Jupyter notebooks, presentations (`md ↔ pptx`), wiki dialects (`mediawiki`, `dokuwiki`, `jira`, `textile`), bibliography (`bibtex ↔ csljson`), and `fb2`/`docbook`/`opml`/`rtf → md`
 - `--mkdir` flag: automatically create the output directory without prompting
 - Multi-input directory detection: when multiple input files are given, the output path is treated as a directory even without a trailing `/`
 - Interactive `Create it? [y/N]` prompt when the output directory is missing and running in a TTY
